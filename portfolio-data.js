@@ -5,10 +5,10 @@
 //   "buy"  = 买入 / 增加持股
 //   "sell" = 卖出 / 减少持股
 //
-// Example:
-// { date: "2026-07-01", type: "buy", symbol: "AAPL", shares: 10, price: 150 }
+// IMPORTANT:
+// Use window.sharedTransactions so app.js can read the data.
 
-const sharedTransactions = [
+window.sharedTransactions = [
     { date: "2026-07-01", type: "buy", symbol: "AAPL", shares: 10, price: 150 },
     { date: "2026-07-03", type: "buy", symbol: "AAPL", shares: 5, price: 175 },
     { date: "2026-07-05", type: "buy", symbol: "NVDA", shares: 3, price: 900 },

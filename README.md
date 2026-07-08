@@ -4,12 +4,12 @@
 
 ## 如何更新你的投资组合
 
-打开 `portfolio-data.js`，编辑里面的 `sharedTransactions`。
+打开 `portfolio-data.js`，编辑里面的 `window.sharedTransactions`。
 
 例子：
 
 ```js
-const sharedTransactions = [
+window.sharedTransactions = [
     { date: "2026-07-01", type: "buy", symbol: "AAPL", shares: 10, price: 150 },
     { date: "2026-07-06", type: "sell", symbol: "AAPL", shares: 2, price: 190 }
 ];
