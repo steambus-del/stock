@@ -9,8 +9,12 @@
 // Use window.sharedTransactions so app.js can read the data.
 
 window.sharedTransactions = [
-    { date: "2026-07-01", type: "buy", symbol: "AAPL", shares: 10, price: 150 },
-    { date: "2026-07-03", type: "buy", symbol: "AAPL", shares: 5, price: 175 },
-    { date: "2026-07-05", type: "buy", symbol: "NVDA", shares: 3, price: 900 },
-    { date: "2026-07-06", type: "sell", symbol: "AAPL", shares: 2, price: 190 }
+    { date: "2026-07-08", type: "buy", symbol: "DIS", shares: 20.65, price: 96.85 },
+    { date: "2026-07-08", type: "buy", symbol: "GOOGL", shares: 5.5395, price: 361.22 },
+    { date: "2026-07-08", type: "buy", symbol: "IAU", shares: 26.1677, price: 76.43 },
+    { date: "2026-07-08", type: "buy", symbol: "MSFT", shares: 5.2269, price: 382.63 },
+    { date: "2026-07-08", type: "buy", symbol: "MU", shares: 2.1254, price: 940.99 },
+    { date: "2026-07-08", type: "buy", symbol: "NFLX", shares: 26.5537, price: 75.32 },
+    { date: "2026-07-08", type: "buy", symbol: "NVDA", shares: 10.1378, price: 197.28 },
+    { date: "2026-07-08", type: "buy", symbol: "VZ", shares: 46.7562, price: 42.78 }
 ];
