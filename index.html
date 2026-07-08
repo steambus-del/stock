@@ -1,0 +1,10 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><title>股票投資組合追蹤器</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>body{font-family:"Microsoft JhengHei",Arial;margin:30px}.container{max-width:1000px;margin:auto}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px;text-align:center}.profit{color:green}.loss{color:red}</style></head>
+<body><div class="container"><h1>股票投資組合追蹤器</h1>
+<input id="symbol" placeholder="股票代號 (例如 AAPL)">
+<input id="shares" type="number" placeholder="股數">
+<input id="cost" type="number" placeholder="買入價格">
+<button onclick="addStock()">新增股票</button>
+<table><thead><tr><th>股票</th><th>股數</th><th>買入價</th><th>現價</th><th>市值</th><th>盈虧</th><th>操作</th></tr></thead><tbody id="portfolio"></tbody></table>
+<h2 id="total"></h2><h2>投資組合盈虧圖</h2><canvas id="portfolioChart"></canvas></div><script src="./app.js"></script></body></html>
