@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8">
-    <title>股票投资组合追踪器 V2 - 分批买卖</title>
+    <title>公开股票投资组合</title>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
@@ -12,22 +12,9 @@
 
 <body>
     <div class="container">
-        <h1>股票投资组合追踪器 V2</h1>
-
-        <div class="input-row">
-            <select id="actionInput">
-                <option value="buy">买入 / 增加</option>
-                <option value="sell">卖出 / 减少</option>
-            </select>
-
-            <input id="symbolInput" placeholder="股票代码，例如 AAPL">
-            <input id="sharesInput" type="number" min="0" step="any" placeholder="股数">
-            <input id="priceInput" type="number" min="0" step="any" placeholder="交易价格">
-            <button id="addButton">新增交易</button>
-        </div>
-
+        <h1>公开股票投资组合</h1>
         <div class="note">
-            买入会增加持股和成本；卖出会减少持股，并按平均成本减少成本基础。
+            这是公开只读版本。访客可以查看投资组合，但不能修改。要更新持仓，请编辑 <b>portfolio-data.js</b> 后重新上传到 GitHub。
         </div>
 
         <div class="table-wrap">
@@ -43,7 +30,6 @@
                         <th>盈亏</th>
                         <th>盈亏百分比</th>
                         <th>今日价格范围</th>
-                        <th>操作</th>
                     </tr>
                 </thead>
 
@@ -55,7 +41,7 @@
                         <th id="totalCostCell">$0.00</th>
                         <th id="totalGainCell">$0.00</th>
                         <th id="totalGainPercentCell">0.00%</th>
-                        <th colspan="2"></th>
+                        <th></th>
                     </tr>
                 </tfoot>
             </table>
@@ -72,13 +58,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th>日期时间</th>
+                        <th>日期</th>
                         <th>操作</th>
                         <th>股票代码</th>
                         <th>股数</th>
                         <th>交易价格</th>
                         <th>交易金额</th>
-                        <th>操作</th>
                     </tr>
                 </thead>
                 <tbody id="transactionBody"></tbody>
@@ -86,6 +71,7 @@
         </div>
     </div>
 
+    <script src="./portfolio-data.js"></script>
     <script src="./app.js"></script>
 </body>
 </html>

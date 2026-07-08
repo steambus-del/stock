@@ -1,13 +1,17 @@
 const API_KEY = "d96p5f1r01qr77dldgf0d96p5f1r01qr77dldgfg";
 
-let transactions = loadTransactions();
+const transactions = Array.isArray(window.sharedTransactions)
+    ? window.sharedTransactions.map(tx => ({
+        date: tx.date || "",
+        type: tx.type === "sell" ? "sell" : "buy",
+        symbol: String(tx.symbol || "").toUpperCase(),
+        shares: Number(tx.shares || 0),
+        price: Number(tx.price || 0)
+    })).filter(tx => tx.symbol && tx.shares > 0 && tx.price > 0)
+    : [];
+
 let portfolioChart = null;
 
-const actionInput = document.getElementById("actionInput");
-const symbolInput = document.getElementById("symbolInput");
-const sharesInput = document.getElementById("sharesInput");
-const priceInput = document.getElementById("priceInput");
-const addButton = document.getElementById("addButton");
 const portfolioBody = document.getElementById("portfolioBody");
 const transactionBody = document.getElementById("transactionBody");
 const totalCostCell = document.getElementById("totalCostCell");
@@ -17,38 +21,6 @@ const chartSummary = document.getElementById("chartSummary");
 const portfolioChartCanvas = document.getElementById("portfolioChart");
 
 Chart.register(ChartDataLabels);
-
-addButton.addEventListener("click", addTransaction);
-
-function loadTransactions() {
-    const savedTransactions = JSON.parse(localStorage.getItem("transactions") || "null");
-
-    if (Array.isArray(savedTransactions)) {
-        return savedTransactions;
-    }
-
-    const oldPortfolio = JSON.parse(localStorage.getItem("portfolio") || "[]");
-
-    if (Array.isArray(oldPortfolio) && oldPortfolio.length > 0) {
-        const migrated = oldPortfolio.map(item => ({
-            id: Date.now() + Math.random(),
-            date: new Date().toLocaleString("zh-CN"),
-            type: "buy",
-            symbol: String(item.symbol || "").toUpperCase(),
-            shares: Number(item.shares || 0),
-            price: Number(item.cost || 0)
-        })).filter(item => item.symbol && item.shares > 0 && item.price > 0);
-
-        localStorage.setItem("transactions", JSON.stringify(migrated));
-        return migrated;
-    }
-
-    return [];
-}
-
-function saveTransactions() {
-    localStorage.setItem("transactions", JSON.stringify(transactions));
-}
 
 function formatMoney(value) {
     return "$" + Number(value).toLocaleString("zh-CN", {
@@ -79,43 +51,6 @@ function formatChartLabel(gainValue, gainPercent) {
         maximumFractionDigits: 0
     });
     return moneyText + " (" + formatPercent(gainPercent) + ")";
-}
-
-function addTransaction() {
-    const type = actionInput.value;
-    const symbol = symbolInput.value.trim().toUpperCase();
-    const shares = Number(sharesInput.value);
-    const price = Number(priceInput.value);
-
-    if (!symbol || shares <= 0 || price <= 0) {
-        alert("请输入正确的股票代码、股数和交易价格。");
-        return;
-    }
-
-    const currentPosition = calculatePositions()[symbol];
-    const currentShares = currentPosition ? currentPosition.shares : 0;
-
-    if (type === "sell" && shares > currentShares) {
-        alert("卖出股数不能大于目前持股数量。");
-        return;
-    }
-
-    transactions.push({
-        id: Date.now() + Math.random(),
-        date: new Date().toLocaleString("zh-CN"),
-        type: type,
-        symbol: symbol,
-        shares: shares,
-        price: price
-    });
-
-    saveTransactions();
-
-    symbolInput.value = "";
-    sharesInput.value = "";
-    priceInput.value = "";
-
-    loadPortfolio();
 }
 
 function calculatePositions() {
@@ -231,10 +166,6 @@ async function loadPortfolio() {
             <td class="${gainClass}">${gainText}</td>
             <td class="${gainClass}">${formatPercent(gainPercent)}</td>
             <td>${priceRange}</td>
-            <td>
-                <button onclick="prefillBuy('${symbol}')">加仓</button>
-                <button onclick="prefillSell('${symbol}')">减仓</button>
-            </td>
         `;
 
         portfolioBody.appendChild(row);
@@ -271,7 +202,6 @@ function drawTransactions() {
             <td>${formatNumber(tx.shares)}</td>
             <td>${formatMoney(tx.price)}</td>
             <td>${formatMoney(amount)}</td>
-            <td><button class="delete-btn" onclick="deleteTransaction(${tx.id})">删除</button></td>
         `;
 
         transactionBody.appendChild(row);
@@ -354,26 +284,6 @@ function drawChart(labels, gains, gainPercents) {
             }
         }
     });
-}
-
-function prefillBuy(symbol) {
-    actionInput.value = "buy";
-    symbolInput.value = symbol;
-    sharesInput.focus();
-}
-
-function prefillSell(symbol) {
-    actionInput.value = "sell";
-    symbolInput.value = symbol;
-    sharesInput.focus();
-}
-
-function deleteTransaction(id) {
-    if (!confirm("确定要删除这笔交易吗？")) return;
-
-    transactions = transactions.filter(tx => tx.id !== id);
-    saveTransactions();
-    loadPortfolio();
 }
 
 loadPortfolio();
