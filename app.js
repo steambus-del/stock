@@ -29,6 +29,7 @@ const portfolioBody = document.getElementById("portfolioBody");
 const transactionBody = document.getElementById("transactionBody");
 const dailyMovementBody = document.getElementById("dailyMovementBody");
 
+const totalValueCell = document.getElementById("totalValueCell");
 const totalCostCell = document.getElementById("totalCostCell");
 const totalGainCell = document.getElementById("totalGainCell");
 const totalGainPercentCell = document.getElementById("totalGainPercentCell");
@@ -237,6 +238,7 @@ async function loadPortfolio() {
 
     const totalGainPercent = totalCost > 0 ? (totalGain / totalCost) * 100 : 0;
 
+    totalValueCell.textContent = formatMoney(totalValue);
     totalCostCell.textContent = formatMoney(totalCost);
 
     totalGainCell.textContent = (totalGain >= 0 ? "+" : "") + formatMoney(totalGain);

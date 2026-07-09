@@ -44,3 +44,8 @@ GitHub Pages is static, so it cannot automatically save daily snapshots. You upd
 
 - Fixed empty 每日价格变动 cells causing table columns to shift.
 - 每日价格变动 now always displays a value, including $0.00 (0.00%).
+
+
+## V3.1.3 Update
+
+- Added total 市值 to the 总盈亏 footer row under the 市值 column.
