@@ -30,3 +30,9 @@ Finnhub free/API availability may affect earnings and beat/miss data. If data is
 - Missing/null earnings values now display `--`.
 - Earnings date still uses upcoming earnings.
 - EPS/Revenue beat now attempts to use the most recent reported earnings data instead of upcoming unreleased earnings.
+
+
+V4.1 additions:
+- Added earnings-data.js
+- Include earnings-data.js before app.js.
+- app.js still needs to be updated to prefer manual values over API values if you want the overrides to appear automatically.
