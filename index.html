@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8">
-    <title>公开股票投资组合 V3.0</title>
+    <title>股票投资组合 V3.0</title>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
@@ -12,12 +12,7 @@
 
 <body>
     <div class="container">
-        <h1>公开股票投资组合 V3.0</h1>
-
-        <div class="note">
-            公开只读版本。访客可以查看投资组合，但不能修改。要更新持仓，请编辑 <b>portfolio-data.js</b>。
-        </div>
-
+        <h1>股票投资组合</h1>
         <div class="table-wrap">
             <table>
                 <thead>
@@ -50,17 +45,13 @@
             </table>
         </div>
 
-        <h2>投资组合盈亏图</h2>
+        <h2>投资盈亏图</h2>
         <div id="chartSummary" class="chart-summary">总投入：$0.00</div>
         <div class="chart-box">
             <canvas id="portfolioChart"></canvas>
         </div>
 
-        <h2>每日投资组合变动</h2>
-        <div class="note">
-            每日变动 = 当日总未实现盈亏 − 前一日总未实现盈亏。今日行会自动用当前总盈亏与 <b>daily-history.js</b> 中最近一日快照比较。
-        </div>
-
+        <h2>每日盈亏</h2>
         <div class="table-wrap">
             <table>
                 <thead>
