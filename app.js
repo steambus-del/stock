@@ -1,289 +1,32 @@
-const API_KEY = "d96p5f1r01qr77dldgf0d96p5f1r01qr77dldgfg";
-
-const transactions = Array.isArray(window.sharedTransactions)
-    ? window.sharedTransactions.map(tx => ({
-        date: tx.date || "",
-        type: tx.type === "sell" ? "sell" : "buy",
-        symbol: String(tx.symbol || "").toUpperCase(),
-        shares: Number(tx.shares || 0),
-        price: Number(tx.price || 0)
-    })).filter(tx => tx.symbol && tx.shares > 0 && tx.price > 0)
-    : [];
-
-let portfolioChart = null;
-
-const portfolioBody = document.getElementById("portfolioBody");
-const transactionBody = document.getElementById("transactionBody");
-const totalCostCell = document.getElementById("totalCostCell");
-const totalGainCell = document.getElementById("totalGainCell");
-const totalGainPercentCell = document.getElementById("totalGainPercentCell");
-const chartSummary = document.getElementById("chartSummary");
-const portfolioChartCanvas = document.getElementById("portfolioChart");
-
+const API_KEY="d96p5f1r01qr77dldgf0d96p5f1r01qr77dldgfg";
+const transactions=Array.isArray(window.sharedTransactions)?window.sharedTransactions.map(tx=>({date:tx.date||"",type:tx.type==="sell"?"sell":"buy",symbol:String(tx.symbol||"").toUpperCase(),shares:Number(tx.shares||0),price:Number(tx.price||0)})).filter(tx=>tx.symbol&&tx.shares>0&&tx.price>0):[];
+const manualDailyHistory=Array.isArray(window.dailyGainLossHistory)?window.dailyGainLossHistory.map(row=>({date:row.date||"",gainLoss:Number(row.gainLoss||0),percent:Number(row.percent||0),note:row.note||"手动记录"})).filter(row=>row.date):[];
+let portfolioChart=null,dailyRows=[],dailyPage=1,transactionPage=1;const PAGE_SIZE=10;
+const portfolioBody=document.getElementById("portfolioBody"),transactionBody=document.getElementById("transactionBody"),dailyGainBody=document.getElementById("dailyGainBody");
+const totalCostCell=document.getElementById("totalCostCell"),totalGainCell=document.getElementById("totalGainCell"),totalGainPercentCell=document.getElementById("totalGainPercentCell");
+const chartSummary=document.getElementById("chartSummary"),portfolioChartCanvas=document.getElementById("portfolioChart");
+const dailyPrevButton=document.getElementById("dailyPrevButton"),dailyNextButton=document.getElementById("dailyNextButton"),dailyPageInfo=document.getElementById("dailyPageInfo");
+const txPrevButton=document.getElementById("txPrevButton"),txNextButton=document.getElementById("txNextButton"),txPageInfo=document.getElementById("txPageInfo");
 Chart.register(ChartDataLabels);
-
-function formatMoney(value) {
-    return "$" + Number(value).toLocaleString("zh-CN", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-}
-
-function formatNumber(value) {
-    if (!Number.isFinite(Number(value))) return "-";
-    return Number(value).toLocaleString("zh-CN", {
-        maximumFractionDigits: 4
-    });
-}
-
-function formatPercent(value) {
-    if (!Number.isFinite(Number(value))) return "0.00%";
-    const sign = value >= 0 ? "+" : "";
-    return sign + Number(value).toLocaleString("zh-CN", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }) + "%";
-}
-
-function formatChartLabel(gainValue, gainPercent) {
-    const sign = gainValue >= 0 ? "+" : "-";
-    const moneyText = sign + "$" + Math.abs(gainValue).toLocaleString("zh-CN", {
-        maximumFractionDigits: 0
-    });
-    return moneyText + " (" + formatPercent(gainPercent) + ")";
-}
-
-function calculatePositions() {
-    const positions = {};
-
-    transactions.forEach(tx => {
-        if (!positions[tx.symbol]) {
-            positions[tx.symbol] = {
-                symbol: tx.symbol,
-                shares: 0,
-                costBasis: 0
-            };
-        }
-
-        const position = positions[tx.symbol];
-
-        if (tx.type === "buy") {
-            position.shares += tx.shares;
-            position.costBasis += tx.shares * tx.price;
-        } else if (tx.type === "sell") {
-            if (position.shares <= 0) return;
-
-            const avgCost = position.costBasis / position.shares;
-            const sellShares = Math.min(tx.shares, position.shares);
-
-            position.shares -= sellShares;
-            position.costBasis -= sellShares * avgCost;
-
-            if (position.shares < 0.000001) {
-                position.shares = 0;
-                position.costBasis = 0;
-            }
-        }
-    });
-
-    Object.keys(positions).forEach(symbol => {
-        if (positions[symbol].shares <= 0) {
-            delete positions[symbol];
-        }
-    });
-
-    return positions;
-}
-
-async function getQuote(symbol) {
-    try {
-        const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${API_KEY}`;
-        const response = await fetch(url);
-        const data = await response.json();
-
-        return {
-            currentPrice: Number(data.c) || 0,
-            highPrice: Number(data.h) || 0,
-            lowPrice: Number(data.l) || 0
-        };
-    } catch (error) {
-        console.error("获取股票价格失败:", symbol, error);
-        return {
-            currentPrice: 0,
-            highPrice: 0,
-            lowPrice: 0
-        };
-    }
-}
-
-async function loadPortfolio() {
-    portfolioBody.innerHTML = "";
-
-    const positions = calculatePositions();
-
-    let totalValue = 0;
-    let totalCost = 0;
-    let totalGain = 0;
-
-    const labels = [];
-    const gains = [];
-    const gainPercents = [];
-
-    for (const symbol of Object.keys(positions).sort()) {
-        const stock = positions[symbol];
-        const quote = await getQuote(symbol);
-
-        const currentPrice = quote.currentPrice;
-        const marketValue = stock.shares * currentPrice;
-        const costBasis = stock.costBasis;
-        const avgCost = stock.shares > 0 ? costBasis / stock.shares : 0;
-        const gainLoss = marketValue - costBasis;
-        const gainPercent = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
-
-        totalValue += marketValue;
-        totalCost += costBasis;
-        totalGain += gainLoss;
-
-        labels.push(symbol);
-        gains.push(gainLoss);
-        gainPercents.push(gainPercent);
-
-        const gainClass = gainLoss >= 0 ? "gain" : "loss";
-        const gainText = (gainLoss >= 0 ? "+" : "") + formatMoney(gainLoss);
-        const priceRange = quote.lowPrice > 0 && quote.highPrice > 0
-            ? formatMoney(quote.lowPrice) + " - " + formatMoney(quote.highPrice)
-            : "-";
-
-        const row = document.createElement("tr");
-
-        row.innerHTML = `
-            <td>${symbol}</td>
-            <td>${formatNumber(stock.shares)}</td>
-            <td>${formatMoney(avgCost)}</td>
-            <td>${formatMoney(currentPrice)}</td>
-            <td>${formatMoney(marketValue)}</td>
-            <td>${formatMoney(costBasis)}</td>
-            <td class="${gainClass}">${gainText}</td>
-            <td class="${gainClass}">${formatPercent(gainPercent)}</td>
-            <td>${priceRange}</td>
-        `;
-
-        portfolioBody.appendChild(row);
-    }
-
-    const totalGainPercent = totalCost > 0 ? (totalGain / totalCost) * 100 : 0;
-
-    totalCostCell.textContent = formatMoney(totalCost);
-
-    totalGainCell.textContent = (totalGain >= 0 ? "+" : "") + formatMoney(totalGain);
-    totalGainCell.className = totalGain >= 0 ? "gain" : "loss";
-
-    totalGainPercentCell.textContent = formatPercent(totalGainPercent);
-    totalGainPercentCell.className = totalGain >= 0 ? "gain" : "loss";
-
-    chartSummary.textContent = "总投入：" + formatMoney(totalCost) + "　|　当前市值：" + formatMoney(totalValue) + "　|　总盈亏：" + (totalGain >= 0 ? "+" : "") + formatMoney(totalGain);
-
-    drawChart(labels, gains, gainPercents);
-    drawTransactions();
-}
-
-function drawTransactions() {
-    transactionBody.innerHTML = "";
-
-    [...transactions].reverse().forEach(tx => {
-        const row = document.createElement("tr");
-        const typeText = tx.type === "buy" ? "买入" : "卖出";
-        const amount = tx.shares * tx.price;
-
-        row.innerHTML = `
-            <td>${tx.date}</td>
-            <td>${typeText}</td>
-            <td>${tx.symbol}</td>
-            <td>${formatNumber(tx.shares)}</td>
-            <td>${formatMoney(tx.price)}</td>
-            <td>${formatMoney(amount)}</td>
-        `;
-
-        transactionBody.appendChild(row);
-    });
-}
-
-function drawChart(labels, gains, gainPercents) {
-    if (portfolioChart) {
-        portfolioChart.destroy();
-    }
-
-    portfolioChart = new Chart(portfolioChartCanvas, {
-        type: "bar",
-        data: {
-            labels: labels,
-            datasets: [{
-                label: "盈亏",
-                data: gains,
-                gainPercents: gainPercents,
-                backgroundColor: gains.map(value => value >= 0 ? "#16a34a" : "#dc2626"),
-                borderColor: gains.map(value => value >= 0 ? "#15803d" : "#b91c1c"),
-                borderWidth: 1,
-                borderRadius: 5,
-                barPercentage: 0.6,
-                categoryPercentage: 0.75
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-                padding: {
-                    top: 28,
-                    bottom: 8
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const gainPercent = context.dataset.gainPercents[context.dataIndex] || 0;
-                            return "盈亏：" + formatMoney(context.raw) + " " + formatPercent(gainPercent);
-                        }
-                    }
-                },
-                datalabels: {
-                    clamp: true,
-                    clip: false,
-                    anchor: "end",
-                    align: "top",
-                    offset: 6,
-                    color: function(context) {
-                        return context.dataset.data[context.dataIndex] >= 0 ? "#16a34a" : "#dc2626";
-                    },
-                    font: {
-                        weight: "bold",
-                        size: 11
-                    },
-                    formatter: function(value, context) {
-                        const gainPercent = context.dataset.gainPercents[context.dataIndex] || 0;
-                        return formatChartLabel(value, gainPercent);
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grace: "5%",
-                    ticks: {
-                        callback: function(value) {
-                            return "$" + Intl.NumberFormat("en", {
-                                notation: "compact"
-                            }).format(value);
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
+dailyPrevButton.addEventListener("click",()=>{if(dailyPage>1){dailyPage--;drawDailyGainTable();}});
+dailyNextButton.addEventListener("click",()=>{const t=Math.max(1,Math.ceil(dailyRows.length/PAGE_SIZE));if(dailyPage<t){dailyPage++;drawDailyGainTable();}});
+txPrevButton.addEventListener("click",()=>{if(transactionPage>1){transactionPage--;drawTransactions();}});
+txNextButton.addEventListener("click",()=>{const t=Math.max(1,Math.ceil(transactions.length/PAGE_SIZE));if(transactionPage<t){transactionPage++;drawTransactions();}});
+function formatMoney(v){return "$"+Number(v).toLocaleString("zh-CN",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function formatNumber(v){return Number.isFinite(Number(v))?Number(v).toLocaleString("zh-CN",{maximumFractionDigits:4}):"-";}
+function formatPercent(v){if(!Number.isFinite(Number(v)))return"0.00%";return(v>=0?"+":"")+Number(v).toLocaleString("zh-CN",{minimumFractionDigits:2,maximumFractionDigits:2})+"%";}
+function formatChartLabel(g,p){const s=g>=0?"+":"-";return s+"$"+Math.abs(g).toLocaleString("zh-CN",{maximumFractionDigits:0})+" ("+formatPercent(p)+")";}
+function todayStr(){return new Date().toLocaleDateString("en-CA");}
+function calculatePositions(){const pos={};transactions.forEach(tx=>{if(!pos[tx.symbol])pos[tx.symbol]={symbol:tx.symbol,shares:0,costBasis:0};const p=pos[tx.symbol];if(tx.type==="buy"){p.shares+=tx.shares;p.costBasis+=tx.shares*tx.price;}else{if(p.shares<=0)return;const avg=p.costBasis/p.shares;const sell=Math.min(tx.shares,p.shares);p.shares-=sell;p.costBasis-=sell*avg;if(p.shares<.000001){p.shares=0;p.costBasis=0;}}});Object.keys(pos).forEach(s=>{if(pos[s].shares<=0)delete pos[s];});return pos;}
+async function getQuote(symbol){try{const r=await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${API_KEY}`);const d=await r.json();return{currentPrice:Number(d.c)||0,highPrice:Number(d.h)||0,lowPrice:Number(d.l)||0,dailyChange:Number(d.d)||0,dailyChangePercent:Number(d.dp)||0};}catch(e){return{currentPrice:0,highPrice:0,lowPrice:0,dailyChange:0,dailyChangePercent:0};}}
+async function loadPortfolio(){portfolioBody.innerHTML="";const positions=calculatePositions();let totalValue=0,totalCost=0,totalGain=0,todayDailyGain=0,todayPrevValue=0;const labels=[],gains=[],gainPercents=[];
+for(const symbol of Object.keys(positions).sort()){const stock=positions[symbol],q=await getQuote(symbol);const cp=q.currentPrice,mv=stock.shares*cp,cb=stock.costBasis,avg=stock.shares>0?cb/stock.shares:0,g=mv-cb,gp=cb>0?g/cb*100:0;todayDailyGain+=stock.shares*q.dailyChange;todayPrevValue+=stock.shares*Math.max(cp-q.dailyChange,0);totalValue+=mv;totalCost+=cb;totalGain+=g;labels.push(symbol);gains.push(g);gainPercents.push(gp);const cls=g>=0?"gain":"loss";const range=q.lowPrice>0&&q.highPrice>0?formatMoney(q.lowPrice)+" - "+formatMoney(q.highPrice):"-";const tr=document.createElement("tr");tr.innerHTML=`<td>${symbol}</td><td>${formatNumber(stock.shares)}</td><td>${formatMoney(avg)}</td><td>${formatMoney(cp)}</td><td>${formatMoney(mv)}</td><td>${formatMoney(cb)}</td><td class="${cls}">${g>=0?"+":""}${formatMoney(g)}</td><td class="${cls}">${formatPercent(gp)}</td><td>${range}</td>`;portfolioBody.appendChild(tr);}
+const totalGainPercent=totalCost>0?totalGain/totalCost*100:0;const todayPct=todayPrevValue>0?todayDailyGain/todayPrevValue*100:0;
+totalCostCell.textContent=formatMoney(totalCost);totalGainCell.textContent=(totalGain>=0?"+":"")+formatMoney(totalGain);totalGainCell.className=totalGain>=0?"gain":"loss";totalGainPercentCell.textContent=formatPercent(totalGainPercent);totalGainPercentCell.className=totalGain>=0?"gain":"loss";
+chartSummary.textContent="总投入："+formatMoney(totalCost)+"　|　当前市值："+formatMoney(totalValue)+"　|　总盈亏："+(totalGain>=0?"+":"")+formatMoney(totalGain)+" ("+formatPercent(totalGainPercent)+")";
+dailyRows=[{date:todayStr(),gainLoss:todayDailyGain,percent:todayPct,note:"今日估算：当前持股 × 今日价格变动"},...manualDailyHistory];
+drawChart(labels,gains,gainPercents);drawDailyGainTable();drawTransactions();}
+function drawDailyGainTable(){dailyGainBody.innerHTML="";const totalPages=Math.max(1,Math.ceil(dailyRows.length/PAGE_SIZE));dailyPage=Math.min(Math.max(dailyPage,1),totalPages);dailyRows.slice((dailyPage-1)*PAGE_SIZE,(dailyPage-1)*PAGE_SIZE+PAGE_SIZE).forEach(r=>{const cls=r.gainLoss>=0?"gain":"loss";const tr=document.createElement("tr");tr.innerHTML=`<td>${r.date}</td><td class="${cls}">${r.gainLoss>=0?"+":""}${formatMoney(r.gainLoss)}</td><td class="${cls}">${formatPercent(r.percent)}</td><td>${r.note}</td>`;dailyGainBody.appendChild(tr);});dailyPageInfo.textContent=`第 ${dailyPage} 页 / 共 ${totalPages} 页`;dailyPrevButton.disabled=dailyPage<=1;dailyNextButton.disabled=dailyPage>=totalPages;}
+function drawTransactions(){transactionBody.innerHTML="";const sorted=[...transactions].reverse();const totalPages=Math.max(1,Math.ceil(sorted.length/PAGE_SIZE));transactionPage=Math.min(Math.max(transactionPage,1),totalPages);sorted.slice((transactionPage-1)*PAGE_SIZE,(transactionPage-1)*PAGE_SIZE+PAGE_SIZE).forEach(tx=>{const amount=tx.shares*tx.price;const tr=document.createElement("tr");tr.innerHTML=`<td>${tx.date}</td><td>${tx.type==="buy"?"买入":"卖出"}</td><td>${tx.symbol}</td><td>${formatNumber(tx.shares)}</td><td>${formatMoney(tx.price)}</td><td>${formatMoney(amount)}</td>`;transactionBody.appendChild(tr);});txPageInfo.textContent=`第 ${transactionPage} 页 / 共 ${totalPages} 页`;txPrevButton.disabled=transactionPage<=1;txNextButton.disabled=transactionPage>=totalPages;}
+function drawChart(labels,gains,gainPercents){if(portfolioChart)portfolioChart.destroy();portfolioChart=new Chart(portfolioChartCanvas,{type:"bar",data:{labels,datasets:[{label:"盈亏",data:gains,gainPercents,backgroundColor:gains.map(v=>v>=0?"#16a34a":"#dc2626"),borderColor:gains.map(v=>v>=0?"#15803d":"#b91c1c"),borderWidth:1,borderRadius:5,barPercentage:.6,categoryPercentage:.75}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28,bottom:8}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>"盈亏："+formatMoney(c.raw)+" "+formatPercent(c.dataset.gainPercents[c.dataIndex]||0)}},datalabels:{clamp:true,clip:false,anchor:"end",align:"top",offset:6,color:c=>c.dataset.data[c.dataIndex]>=0?"#16a34a":"#dc2626",font:{weight:"bold",size:11},formatter:(v,c)=>formatChartLabel(v,c.dataset.gainPercents[c.dataIndex]||0)}},scales:{y:{beginAtZero:true,grace:"5%",ticks:{callback:v=>"$"+Intl.NumberFormat("en",{notation:"compact"}).format(v)}}}}});}
 loadPortfolio();
