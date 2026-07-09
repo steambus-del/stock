@@ -41,21 +41,3 @@ Finnhub free/API availability may affect earnings and beat/miss data. If data is
 
 
 V4.3: Compact price range indicator.
-
-
-## V4.3.1 Fix
-
-- Fixed 今日价格范围 still displaying as `number - number`.
-- The stock table now renders a compact graphical range bar directly.
-- Low price is shown on the left.
-- High price is shown on the right.
-- Black marker shows current price position in today's range.
-
-
-## V4.4 Volume Update
-
-- Removed EPS Beat and Revenue Beat columns.
-- Added 今日成交量 column.
-- Added 10日平均成交量 column.
-- Volume data is fetched from Finnhub daily candle data.
-- 今日价格范围 remains the compact graphical display.

@@ -81,5 +81,3 @@ th,td{border:1px solid #d1d5db;padding:6px;text-align:center;white-space:nowrap}
 .compact-marker{position:absolute;top:-4px;width:2px;height:12px;background:#111827;transform:translateX(-50%)}
 .compact-labels{display:flex;justify-content:space-between;color:#6b7280}
 .compact-pos{text-align:center;font-weight:bold}
-
-/* V4.3.1 ensures compact range styles are present. */
