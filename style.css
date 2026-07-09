@@ -103,12 +103,12 @@ tfoot th {
     cursor: not-allowed;
 }
 
-
 .sort-header {
     background: transparent;
     color: inherit;
     border: none;
     padding: 0;
+    margin: 0;
     font: inherit;
     font-weight: bold;
     cursor: pointer;
@@ -117,6 +117,15 @@ tfoot th {
 .sort-header:hover {
     color: #2563eb;
     text-decoration: underline;
+}
+
+.sort-header.active-sort::after {
+    content: " ▲";
+    font-size: 11px;
+}
+
+.sort-header.active-sort.desc::after {
+    content: " ▼";
 }
 
 .chart-controls {

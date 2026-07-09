@@ -21,11 +21,13 @@ const savedSnapshots = Array.isArray(window.dailySnapshots)
 
 let portfolioChart = null;
 let portfolioRows = [];
+let dailyMovementRows = [];
+
 let tableSortKey = "symbol";
 let tableSortDirection = "asc";
-let dailyMovementRows = [];
 let dailyPage = 1;
 let transactionPage = 1;
+
 const PAGE_SIZE = 10;
 
 const portfolioBody = document.getElementById("portfolioBody");
@@ -54,7 +56,7 @@ if (window.Chart && window.ChartDataLabels) {
 
 document.querySelectorAll(".sort-header").forEach(button => {
     button.addEventListener("click", () => {
-        const key = button.dataset.sort;
+        const key = button.dataset.sortKey;
 
         if (tableSortKey === key) {
             tableSortDirection = tableSortDirection === "asc" ? "desc" : "asc";
@@ -69,7 +71,7 @@ document.querySelectorAll(".sort-header").forEach(button => {
 
 if (chartSortSelect) {
     chartSortSelect.addEventListener("change", () => {
-        drawChartFromRows();
+        drawChartFromCurrentRows();
     });
 }
 
@@ -205,83 +207,8 @@ async function getQuote(symbol) {
     }
 }
 
-
-function compareRows(a, b, key) {
-    const av = a[key];
-    const bv = b[key];
-
-    if (typeof av === "string" || typeof bv === "string") {
-        return String(av).localeCompare(String(bv));
-    }
-
-    return Number(av || 0) - Number(bv || 0);
-}
-
-function drawPortfolioTable() {
-    portfolioBody.innerHTML = "";
-    portfolioRows = [];
-
-    const sortedRows = [...portfolioRows].sort((a, b) => {
-        const result = compareRows(a, b, tableSortKey);
-        return tableSortDirection === "asc" ? result : -result;
-    });
-
-    sortedRows.forEach(item => {
-        const row = document.createElement("tr");
-        const gainClass = item.gainLoss >= 0 ? "gain" : "loss";
-        const gainText = (item.gainLoss >= 0 ? "+" : "") + formatMoney(item.gainLoss);
-        const dailyClass = item.dailyChange > 0 ? "gain" : (item.dailyChange < 0 ? "loss" : "");
-
-        row.innerHTML = `
-            <td>${item.symbol}</td>
-            <td>${formatNumber(item.shares)}</td>
-            <td>${formatMoney(item.avgCost)}</td>
-            <td>${formatMoney(item.currentPrice)}</td>
-            <td class="${dailyClass}">${item.dailyChange > 0 ? "+" : ""}${formatMoney(item.dailyChange)} (${formatPercent(item.dailyChangePercent)})</td>
-            <td>${formatMoney(item.marketValue)}</td>
-            <td>${formatMoney(item.costBasis)}</td>
-            <td class="${gainClass}">${gainText}</td>
-            <td class="${gainClass}">${formatPercent(item.gainPercent)}</td>
-            <td>${item.priceRange}</td>
-        `;
-
-        portfolioBody.appendChild(row);
-    });
-}
-
-function getChartRows() {
-    const value = chartSortSelect ? chartSortSelect.value : "symbol-asc";
-    const [keyRaw, direction] = value.split("-");
-
-    const keyMap = {
-        symbol: "symbol",
-        gain: "gainLoss",
-        gainPercent: "gainPercent",
-        marketValue: "marketValue",
-        dailyChange: "dailyChange"
-    };
-
-    const key = keyMap[keyRaw] || "symbol";
-
-    return [...portfolioRows].sort((a, b) => {
-        const result = compareRows(a, b, key);
-        return direction === "asc" ? result : -result;
-    });
-}
-
-function drawChartFromRows() {
-    const rows = getChartRows();
-
-    const labels = rows.map(row => row.symbol);
-    const gains = rows.map(row => row.gainLoss);
-    const gainPercents = rows.map(row => row.gainPercent);
-
-    drawChart(labels, gains, gainPercents);
-}
-
-
 async function loadPortfolio() {
-    portfolioBody.innerHTML = "";
+    portfolioRows = [];
 
     const positions = calculatePositions();
 
@@ -289,11 +216,7 @@ async function loadPortfolio() {
     let totalCost = 0;
     let totalGain = 0;
 
-    const labels = [];
-    const gains = [];
-    const gainPercents = [];
-
-    for (const symbol of Object.keys(positions).sort()) {
+    for (const symbol of Object.keys(positions)) {
         const stock = positions[symbol];
         const quote = await getQuote(symbol);
 
@@ -303,32 +226,27 @@ async function loadPortfolio() {
         const avgCost = stock.shares > 0 ? costBasis / stock.shares : 0;
         const gainLoss = marketValue - costBasis;
         const gainPercent = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
+        const priceRange = quote.lowPrice > 0 && quote.highPrice > 0
+            ? formatMoney(quote.lowPrice) + " - " + formatMoney(quote.highPrice)
+            : "-";
 
         totalValue += marketValue;
         totalCost += costBasis;
         totalGain += gainLoss;
 
-        const priceRange = quote.lowPrice > 0 && quote.highPrice > 0
-            ? formatMoney(quote.lowPrice) + " - " + formatMoney(quote.highPrice)
-            : "-";
-
         portfolioRows.push({
-            symbol: symbol,
+            symbol,
             shares: stock.shares,
-            avgCost: avgCost,
-            currentPrice: currentPrice,
+            avgCost,
+            currentPrice,
             dailyChange: Number(quote.dailyChange) || 0,
             dailyChangePercent: Number(quote.dailyChangePercent) || 0,
-            marketValue: marketValue,
-            costBasis: costBasis,
-            gainLoss: gainLoss,
-            gainPercent: gainPercent,
-            priceRange: priceRange
+            marketValue,
+            costBasis,
+            gainLoss,
+            gainPercent,
+            priceRange
         });
-
-        labels.push(symbol);
-        gains.push(gainLoss);
-        gainPercents.push(gainPercent);
     }
 
     const totalGainPercent = totalCost > 0 ? (totalGain / totalCost) * 100 : 0;
@@ -349,10 +267,81 @@ async function loadPortfolio() {
         " (" + formatPercent(totalGainPercent) + ")";
 
     buildDailyMovement(totalGain, totalCost);
+
     drawPortfolioTable();
-    drawChartFromRows();
+    drawChartFromCurrentRows();
     drawDailyMovementTable();
     drawTransactions();
+}
+
+function compareRows(a, b, key) {
+    if (key === "symbol") {
+        return String(a.symbol).localeCompare(String(b.symbol));
+    }
+
+    return Number(a[key] || 0) - Number(b[key] || 0);
+}
+
+function drawPortfolioTable() {
+    portfolioBody.innerHTML = "";
+
+    document.querySelectorAll(".sort-header").forEach(button => {
+        button.classList.remove("active-sort", "desc");
+        if (button.dataset.sortKey === tableSortKey) {
+            button.classList.add("active-sort");
+            if (tableSortDirection === "desc") {
+                button.classList.add("desc");
+            }
+        }
+    });
+
+    const sortedRows = [...portfolioRows].sort((a, b) => {
+        const result = compareRows(a, b, tableSortKey);
+        return tableSortDirection === "asc" ? result : -result;
+    });
+
+    sortedRows.forEach(item => {
+        const row = document.createElement("tr");
+        const gainClass = item.gainLoss >= 0 ? "gain" : "loss";
+        const dailyClass = item.dailyChange > 0 ? "gain" : (item.dailyChange < 0 ? "loss" : "");
+
+        row.innerHTML = `
+            <td>${item.symbol}</td>
+            <td>${formatNumber(item.shares)}</td>
+            <td>${formatMoney(item.avgCost)}</td>
+            <td>${formatMoney(item.currentPrice)}</td>
+            <td class="${dailyClass}">${item.dailyChange > 0 ? "+" : ""}${formatMoney(item.dailyChange)} (${formatPercent(item.dailyChangePercent)})</td>
+            <td>${formatMoney(item.marketValue)}</td>
+            <td>${formatMoney(item.costBasis)}</td>
+            <td class="${gainClass}">${item.gainLoss >= 0 ? "+" : ""}${formatMoney(item.gainLoss)}</td>
+            <td class="${gainClass}">${formatPercent(item.gainPercent)}</td>
+            <td>${item.priceRange}</td>
+        `;
+
+        portfolioBody.appendChild(row);
+    });
+}
+
+function getSortedChartRows() {
+    if (!chartSortSelect) {
+        return [...portfolioRows].sort((a, b) => a.symbol.localeCompare(b.symbol));
+    }
+
+    const [key, direction] = chartSortSelect.value.split(":");
+
+    return [...portfolioRows].sort((a, b) => {
+        const result = compareRows(a, b, key);
+        return direction === "asc" ? result : -result;
+    });
+}
+
+function drawChartFromCurrentRows() {
+    const rows = getSortedChartRows();
+    drawChart(
+        rows.map(row => row.symbol),
+        rows.map(row => row.gainLoss),
+        rows.map(row => row.gainPercent)
+    );
 }
 
 function buildDailyMovement(todayTotalUnrealizedGain, todayTotalCost) {
