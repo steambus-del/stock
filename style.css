@@ -102,3 +102,31 @@ tfoot th {
     background: #9ca3af;
     cursor: not-allowed;
 }
+
+
+.sort-header {
+    background: transparent;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.sort-header:hover {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+.chart-controls {
+    text-align: center;
+    margin: 6px 0 4px;
+    font-size: 14px;
+}
+
+.chart-controls select {
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+}

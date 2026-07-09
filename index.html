@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8">
-    <title>股票投资组合 V3.0</title>
+    <title>股票投资组合</title>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
@@ -13,19 +13,20 @@
 <body>
     <div class="container">
         <h1>股票投资组合</h1>
+
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>股票代码</th>
-                        <th>持股数量</th>
-                        <th>平均成本</th>
-                        <th>最新价格</th>
-                        <th>每日价格变动</th>
-                        <th>市值</th>
-                        <th>总成本</th>
-                        <th>盈亏</th>
-                        <th>盈亏百分比</th>
+                        <th><button class="sort-header" data-sort="symbol">股票代码</button></th>
+                        <th><button class="sort-header" data-sort="shares">持股数量</button></th>
+                        <th><button class="sort-header" data-sort="avgCost">平均成本</button></th>
+                        <th><button class="sort-header" data-sort="currentPrice">最新价格</button></th>
+                        <th><button class="sort-header" data-sort="dailyChange">每日价格变动</button></th>
+                        <th><button class="sort-header" data-sort="marketValue">市值</button></th>
+                        <th><button class="sort-header" data-sort="costBasis">总成本</button></th>
+                        <th><button class="sort-header" data-sort="gainLoss">盈亏</button></th>
+                        <th><button class="sort-header" data-sort="gainPercent">盈亏百分比</button></th>
                         <th>今日价格范围</th>
                     </tr>
                 </thead>
@@ -45,13 +46,27 @@
             </table>
         </div>
 
-        <h2>投资盈亏图</h2>
+        <h2>投资组合盈亏图</h2>
         <div id="chartSummary" class="chart-summary">总投入：$0.00</div>
+        <div class="chart-controls">
+            <label for="chartSortSelect">图表排序：</label>
+            <select id="chartSortSelect">
+                <option value="symbol-asc">股票代码 A-Z</option>
+                <option value="gain-desc">盈亏：高到低</option>
+                <option value="gain-asc">盈亏：低到高</option>
+                <option value="gainPercent-desc">盈亏百分比：高到低</option>
+                <option value="gainPercent-asc">盈亏百分比：低到高</option>
+                <option value="marketValue-desc">市值：高到低</option>
+                <option value="marketValue-asc">市值：低到高</option>
+                <option value="dailyChange-desc">每日变动：高到低</option>
+                <option value="dailyChange-asc">每日变动：低到高</option>
+            </select>
+        </div>
         <div class="chart-box">
             <canvas id="portfolioChart"></canvas>
         </div>
 
-        <h2>每日盈亏</h2>
+        <h2>每日投资盈亏</h2>
         <div class="table-wrap">
             <table>
                 <thead>

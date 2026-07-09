@@ -20,6 +20,9 @@ const savedSnapshots = Array.isArray(window.dailySnapshots)
     : [];
 
 let portfolioChart = null;
+let portfolioRows = [];
+let tableSortKey = "symbol";
+let tableSortDirection = "asc";
 let dailyMovementRows = [];
 let dailyPage = 1;
 let transactionPage = 1;
@@ -35,6 +38,7 @@ const totalGainCell = document.getElementById("totalGainCell");
 const totalGainPercentCell = document.getElementById("totalGainPercentCell");
 const chartSummary = document.getElementById("chartSummary");
 const portfolioChartCanvas = document.getElementById("portfolioChart");
+const chartSortSelect = document.getElementById("chartSortSelect");
 
 const dailyPrevButton = document.getElementById("dailyPrevButton");
 const dailyNextButton = document.getElementById("dailyNextButton");
@@ -46,6 +50,27 @@ const txPageInfo = document.getElementById("txPageInfo");
 
 if (window.Chart && window.ChartDataLabels) {
     Chart.register(ChartDataLabels);
+}
+
+document.querySelectorAll(".sort-header").forEach(button => {
+    button.addEventListener("click", () => {
+        const key = button.dataset.sort;
+
+        if (tableSortKey === key) {
+            tableSortDirection = tableSortDirection === "asc" ? "desc" : "asc";
+        } else {
+            tableSortKey = key;
+            tableSortDirection = key === "symbol" ? "asc" : "desc";
+        }
+
+        drawPortfolioTable();
+    });
+});
+
+if (chartSortSelect) {
+    chartSortSelect.addEventListener("change", () => {
+        drawChartFromRows();
+    });
 }
 
 dailyPrevButton.addEventListener("click", () => {
@@ -180,6 +205,81 @@ async function getQuote(symbol) {
     }
 }
 
+
+function compareRows(a, b, key) {
+    const av = a[key];
+    const bv = b[key];
+
+    if (typeof av === "string" || typeof bv === "string") {
+        return String(av).localeCompare(String(bv));
+    }
+
+    return Number(av || 0) - Number(bv || 0);
+}
+
+function drawPortfolioTable() {
+    portfolioBody.innerHTML = "";
+    portfolioRows = [];
+
+    const sortedRows = [...portfolioRows].sort((a, b) => {
+        const result = compareRows(a, b, tableSortKey);
+        return tableSortDirection === "asc" ? result : -result;
+    });
+
+    sortedRows.forEach(item => {
+        const row = document.createElement("tr");
+        const gainClass = item.gainLoss >= 0 ? "gain" : "loss";
+        const gainText = (item.gainLoss >= 0 ? "+" : "") + formatMoney(item.gainLoss);
+        const dailyClass = item.dailyChange > 0 ? "gain" : (item.dailyChange < 0 ? "loss" : "");
+
+        row.innerHTML = `
+            <td>${item.symbol}</td>
+            <td>${formatNumber(item.shares)}</td>
+            <td>${formatMoney(item.avgCost)}</td>
+            <td>${formatMoney(item.currentPrice)}</td>
+            <td class="${dailyClass}">${item.dailyChange > 0 ? "+" : ""}${formatMoney(item.dailyChange)} (${formatPercent(item.dailyChangePercent)})</td>
+            <td>${formatMoney(item.marketValue)}</td>
+            <td>${formatMoney(item.costBasis)}</td>
+            <td class="${gainClass}">${gainText}</td>
+            <td class="${gainClass}">${formatPercent(item.gainPercent)}</td>
+            <td>${item.priceRange}</td>
+        `;
+
+        portfolioBody.appendChild(row);
+    });
+}
+
+function getChartRows() {
+    const value = chartSortSelect ? chartSortSelect.value : "symbol-asc";
+    const [keyRaw, direction] = value.split("-");
+
+    const keyMap = {
+        symbol: "symbol",
+        gain: "gainLoss",
+        gainPercent: "gainPercent",
+        marketValue: "marketValue",
+        dailyChange: "dailyChange"
+    };
+
+    const key = keyMap[keyRaw] || "symbol";
+
+    return [...portfolioRows].sort((a, b) => {
+        const result = compareRows(a, b, key);
+        return direction === "asc" ? result : -result;
+    });
+}
+
+function drawChartFromRows() {
+    const rows = getChartRows();
+
+    const labels = rows.map(row => row.symbol);
+    const gains = rows.map(row => row.gainLoss);
+    const gainPercents = rows.map(row => row.gainPercent);
+
+    drawChart(labels, gains, gainPercents);
+}
+
+
 async function loadPortfolio() {
     portfolioBody.innerHTML = "";
 
@@ -208,32 +308,27 @@ async function loadPortfolio() {
         totalCost += costBasis;
         totalGain += gainLoss;
 
-        labels.push(symbol);
-        gains.push(gainLoss);
-        gainPercents.push(gainPercent);
-
-        const gainClass = gainLoss >= 0 ? "gain" : "loss";
-        const gainText = (gainLoss >= 0 ? "+" : "") + formatMoney(gainLoss);
         const priceRange = quote.lowPrice > 0 && quote.highPrice > 0
             ? formatMoney(quote.lowPrice) + " - " + formatMoney(quote.highPrice)
             : "-";
 
-        const row = document.createElement("tr");
+        portfolioRows.push({
+            symbol: symbol,
+            shares: stock.shares,
+            avgCost: avgCost,
+            currentPrice: currentPrice,
+            dailyChange: Number(quote.dailyChange) || 0,
+            dailyChangePercent: Number(quote.dailyChangePercent) || 0,
+            marketValue: marketValue,
+            costBasis: costBasis,
+            gainLoss: gainLoss,
+            gainPercent: gainPercent,
+            priceRange: priceRange
+        });
 
-        row.innerHTML = `
-            <td>${symbol}</td>
-            <td>${formatNumber(stock.shares)}</td>
-            <td>${formatMoney(avgCost)}</td>
-            <td>${formatMoney(currentPrice)}</td>
-            <td class="${Number(quote.dailyChange) > 0 ? "gain" : (Number(quote.dailyChange) < 0 ? "loss" : "")}">${Number(quote.dailyChange) > 0 ? "+" : ""}${formatMoney(Number(quote.dailyChange) || 0)} (${formatPercent(Number(quote.dailyChangePercent) || 0)})</td>
-            <td>${formatMoney(marketValue)}</td>
-            <td>${formatMoney(costBasis)}</td>
-            <td class="${gainClass}">${gainText}</td>
-            <td class="${gainClass}">${formatPercent(gainPercent)}</td>
-            <td>${priceRange}</td>
-        `;
-
-        portfolioBody.appendChild(row);
+        labels.push(symbol);
+        gains.push(gainLoss);
+        gainPercents.push(gainPercent);
     }
 
     const totalGainPercent = totalCost > 0 ? (totalGain / totalCost) * 100 : 0;
@@ -254,7 +349,8 @@ async function loadPortfolio() {
         " (" + formatPercent(totalGainPercent) + ")";
 
     buildDailyMovement(totalGain, totalCost);
-    drawChart(labels, gains, gainPercents);
+    drawPortfolioTable();
+    drawChartFromRows();
     drawDailyMovementTable();
     drawTransactions();
 }

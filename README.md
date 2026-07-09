@@ -54,3 +54,9 @@ GitHub Pages is static, so it cannot automatically save daily snapshots. You upd
 ## V3.1.4 Update
 
 - Fixed 总盈亏 footer alignment after adding 每日价格变动 column.
+
+
+## V3.2 Update
+
+- Stock table headers are sortable.
+- Bar chart is sortable using the chart sort dropdown.
