@@ -23,8 +23,8 @@ let portfolioChart = null;
 let portfolioRows = [];
 let dailyMovementRows = [];
 
-let tableSortKey = "symbol";
-let tableSortDirection = "asc";
+let tableSortKey = "gainLoss";
+let tableSortDirection = "desc";
 let dailyPage = 1;
 let transactionPage = 1;
 

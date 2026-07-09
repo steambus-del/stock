@@ -61,3 +61,9 @@ GitHub Pages is static, so it cannot automatically save daily snapshots. You upd
 - Rebuilt sorting logic.
 - Stock table headers are clickable and sortable.
 - Bar chart sorting dropdown works independently.
+
+
+## V3.3.1 Update
+
+- Default stock table sorting is now 盈亏 高到低.
+- Default bar chart sorting is now 盈亏 高到低.

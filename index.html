@@ -51,7 +51,7 @@
             <label for="chartSortSelect">图表排序：</label>
             <select id="chartSortSelect">
                 <option value="symbol:asc">股票代码 A-Z</option>
-                <option value="gainLoss:desc">盈亏 高到低</option>
+                <option value="gainLoss:desc" selected>盈亏 高到低</option>
                 <option value="gainLoss:asc">盈亏 低到高</option>
                 <option value="gainPercent:desc">盈亏百分比 高到低</option>
                 <option value="gainPercent:asc">盈亏百分比 低到高</option>
@@ -65,8 +65,7 @@
             <canvas id="portfolioChart"></canvas>
         </div>
 
-        <h2>每日投资盈亏</h2>
-
+        <h2>每日盈亏</h2>
         <div class="table-wrap">
             <table>
                 <thead>
