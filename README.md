@@ -67,3 +67,15 @@ GitHub Pages is static, so it cannot automatically save daily snapshots. You upd
 
 - Default stock table sorting is now 盈亏 高到低.
 - Default bar chart sorting is now 盈亏 高到低.
+
+
+## V3.4 Update
+
+- Added sortable 财报日期 column at the end of the stock table.
+- Automatically fetches upcoming earnings date from Finnhub earnings calendar.
+- Shows days remaining, such as `2026-07-30（21天）`.
+- Color coding:
+  - Red: within 7 days
+  - Orange: within 30 days
+  - Green: more than 30 days
+  - Gray: unavailable

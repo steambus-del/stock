@@ -207,6 +207,71 @@ async function getQuote(symbol) {
     }
 }
 
+
+async function getEarningsInfo(symbol) {
+    try {
+        const today = new Date();
+        const fromDate = today.toLocaleDateString("en-CA");
+
+        const future = new Date(today);
+        future.setMonth(future.getMonth() + 12);
+        const toDate = future.toLocaleDateString("en-CA");
+
+        const url = `https://finnhub.io/api/v1/calendar/earnings?from=${fromDate}&to=${toDate}&symbol=${encodeURIComponent(symbol)}&token=${API_KEY}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (!data || !Array.isArray(data.earningsCalendar) || data.earningsCalendar.length === 0) {
+            return {
+                date: "",
+                days: 999999,
+                display: "--",
+                className: "earnings-unknown"
+            };
+        }
+
+        const item = data.earningsCalendar
+            .filter(row => row.date)
+            .sort((a, b) => String(a.date).localeCompare(String(b.date)))[0];
+
+        if (!item || !item.date) {
+            return {
+                date: "",
+                days: 999999,
+                display: "--",
+                className: "earnings-unknown"
+            };
+        }
+
+        const earningsDate = new Date(item.date + "T00:00:00");
+        const todayStart = new Date(fromDate + "T00:00:00");
+        const days = Math.ceil((earningsDate - todayStart) / (1000 * 60 * 60 * 24));
+
+        let className = "earnings-later";
+        if (days <= 7) {
+            className = "earnings-soon";
+        } else if (days <= 30) {
+            className = "earnings-medium";
+        }
+
+        return {
+            date: item.date,
+            days: days,
+            display: item.date + "（" + days + "天）",
+            className: className
+        };
+    } catch (error) {
+        console.error("获取财报日期失败:", symbol, error);
+        return {
+            date: "",
+            days: 999999,
+            display: "--",
+            className: "earnings-unknown"
+        };
+    }
+}
+
+
 async function loadPortfolio() {
     portfolioRows = [];
 
@@ -219,6 +284,7 @@ async function loadPortfolio() {
     for (const symbol of Object.keys(positions)) {
         const stock = positions[symbol];
         const quote = await getQuote(symbol);
+        const earnings = await getEarningsInfo(symbol);
 
         const currentPrice = quote.currentPrice;
         const marketValue = stock.shares * currentPrice;
@@ -245,7 +311,10 @@ async function loadPortfolio() {
             costBasis,
             gainLoss,
             gainPercent,
-            priceRange
+            priceRange,
+            earningsDisplay: earnings.display,
+            earningsSort: earnings.days,
+            earningsClass: earnings.className
         });
     }
 
@@ -316,6 +385,7 @@ function drawPortfolioTable() {
             <td class="${gainClass}">${item.gainLoss >= 0 ? "+" : ""}${formatMoney(item.gainLoss)}</td>
             <td class="${gainClass}">${formatPercent(item.gainPercent)}</td>
             <td>${item.priceRange}</td>
+            <td class="${item.earningsClass}">${item.earningsDisplay}</td>
         `;
 
         portfolioBody.appendChild(row);

@@ -139,3 +139,23 @@ tfoot th {
     border: 1px solid #d1d5db;
     border-radius: 6px;
 }
+
+
+.earnings-soon {
+    color: #dc2626;
+    font-weight: bold;
+}
+
+.earnings-medium {
+    color: #d97706;
+    font-weight: bold;
+}
+
+.earnings-later {
+    color: #16a34a;
+    font-weight: bold;
+}
+
+.earnings-unknown {
+    color: #6b7280;
+}
