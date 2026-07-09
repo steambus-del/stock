@@ -1,8 +1,33 @@
-# 公开只读股票投资组合
+# stock-portfolio-public-readonly-v3.0
 
-新增功能：
-- 买卖记录分页，每页 10 条。
-- 每日总盈亏分页，每页 10 条。
-- 每日总盈亏不是累计盈亏，而是当日组合盈亏。
-- 总盈亏后面显示总盈亏百分比。
-- Gain 绿色，Loss 红色。
+Public read-only GitHub Pages stock portfolio tracker.
+
+## Files
+
+- `index.html`
+- `style.css`
+- `portfolio-data.js`
+- `daily-history.js`
+- `app.js`
+
+## How to update holdings
+
+Edit `portfolio-data.js`.
+
+## How to update daily movement history
+
+At the end of a trading day, copy your current total unrealized gain into `daily-history.js`:
+
+```js
+window.dailySnapshots = [
+    { date: "2026-07-09", totalUnrealizedGain: 500.00, totalCost: 5000.00, note: "手动记录" }
+];
+```
+
+The site calculates:
+
+Daily Movement = Current total unrealized gain - previous snapshot total unrealized gain.
+
+## Notes
+
+GitHub Pages is static, so it cannot automatically save daily snapshots. You update `daily-history.js` manually.

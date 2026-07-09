@@ -2,24 +2,40 @@
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8">
-    <title>公开股票投资组合</title>
+    <title>公开股票投资组合 V3.0</title>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
     <link rel="stylesheet" href="./style.css">
 </head>
+
 <body>
     <div class="container">
-        <h1>公开股票投资组合</h1>
-        <div class="note">这是公开只读版本。访客可以查看投资组合，但不能修改。要更新持仓，请编辑 <b>portfolio-data.js</b> 后重新上传到 GitHub。</div>
+        <h1>公开股票投资组合 V3.0</h1>
+
+        <div class="note">
+            公开只读版本。访客可以查看投资组合，但不能修改。要更新持仓，请编辑 <b>portfolio-data.js</b>。
+        </div>
 
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>股票代码</th><th>持股数量</th><th>平均成本</th><th>最新价格</th><th>市值</th><th>总成本</th><th>盈亏</th><th>盈亏百分比</th><th>今日价格范围</th>
+                        <th>股票代码</th>
+                        <th>持股数量</th>
+                        <th>平均成本</th>
+                        <th>最新价格</th>
+                        <th>市值</th>
+                        <th>总成本</th>
+                        <th>盈亏</th>
+                        <th>盈亏百分比</th>
+                        <th>今日价格范围</th>
                     </tr>
                 </thead>
+
                 <tbody id="portfolioBody"></tbody>
+
                 <tfoot>
                     <tr>
                         <th colspan="5">总盈亏</th>
@@ -34,16 +50,32 @@
 
         <h2>投资组合盈亏图</h2>
         <div id="chartSummary" class="chart-summary">总投入：$0.00</div>
-        <div class="chart-box"><canvas id="portfolioChart"></canvas></div>
+        <div class="chart-box">
+            <canvas id="portfolioChart"></canvas>
+        </div>
 
-        <h2>每日总盈亏</h2>
-        <div class="note">这里显示的是每日合计盈亏，不是全部期间累计盈亏。今日数据按当前持股数量 × 今日价格变动估算。</div>
+        <h2>每日投资组合变动</h2>
+        <div class="note">
+            每日变动 = 当日总未实现盈亏 − 前一日总未实现盈亏。今日行会自动用当前总盈亏与 <b>daily-history.js</b> 中最近一日快照比较。
+        </div>
+
         <div class="table-wrap">
             <table>
-                <thead><tr><th>日期</th><th>每日总盈亏</th><th>每日盈亏百分比</th><th>说明</th></tr></thead>
-                <tbody id="dailyGainBody"></tbody>
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>当日变动</th>
+                        <th>当日变动百分比</th>
+                        <th>当日总未实现盈亏</th>
+                        <th>对比前一日总未实现盈亏</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+
+                <tbody id="dailyMovementBody"></tbody>
             </table>
         </div>
+
         <div class="pager">
             <button id="dailyPrevButton">上一页</button>
             <span id="dailyPageInfo">第 1 页</span>
@@ -51,19 +83,33 @@
         </div>
 
         <h2>买卖记录</h2>
+
         <div class="table-wrap">
             <table>
-                <thead><tr><th>日期</th><th>操作</th><th>股票代码</th><th>股数</th><th>交易价格</th><th>交易金额</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>操作</th>
+                        <th>股票代码</th>
+                        <th>股数</th>
+                        <th>交易价格</th>
+                        <th>交易金额</th>
+                    </tr>
+                </thead>
+
                 <tbody id="transactionBody"></tbody>
             </table>
         </div>
+
         <div class="pager">
             <button id="txPrevButton">上一页</button>
             <span id="txPageInfo">第 1 页</span>
             <button id="txNextButton">下一页</button>
         </div>
     </div>
+
     <script src="./portfolio-data.js"></script>
+    <script src="./daily-history.js"></script>
     <script src="./app.js"></script>
 </body>
 </html>
