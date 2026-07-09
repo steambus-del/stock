@@ -224,7 +224,7 @@ async function loadPortfolio() {
             <td>${formatNumber(stock.shares)}</td>
             <td>${formatMoney(avgCost)}</td>
             <td>${formatMoney(currentPrice)}</td>
-            <td class="${quote.dailyChange > 0 ? "gain" : (quote.dailyChange < 0 ? "loss" : "")}">${quote.dailyChange > 0 ? "+" : ""}${formatMoney(quote.dailyChange)} <span class="${quote.dailyChange > 0 ? "gain" : (quote.dailyChange < 0 ? "loss" : "")}">(${formatPercent(quote.dailyChangePercent)})</span></td>
+            <td class="${Number(quote.dailyChange) > 0 ? "gain" : (Number(quote.dailyChange) < 0 ? "loss" : "")}">${Number(quote.dailyChange) > 0 ? "+" : ""}${formatMoney(Number(quote.dailyChange) || 0)} (${formatPercent(Number(quote.dailyChangePercent) || 0)})</td>
             <td>${formatMoney(marketValue)}</td>
             <td>${formatMoney(costBasis)}</td>
             <td class="${gainClass}">${gainText}</td>

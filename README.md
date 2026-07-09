@@ -39,3 +39,8 @@ GitHub Pages is static, so it cannot automatically save daily snapshots. You upd
 - Shows daily dollar change and percentage change from Finnhub quote data.
 
 - V3.1.1: 每日价格变动按涨跌着色（绿色=上涨，红色=下跌）。
+
+## V3.1.2 Update
+
+- Fixed empty 每日价格变动 cells causing table columns to shift.
+- 每日价格变动 now always displays a value, including $0.00 (0.00%).
