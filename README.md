@@ -41,3 +41,12 @@ Finnhub free/API availability may affect earnings and beat/miss data. If data is
 
 
 V4.3: Compact price range indicator.
+
+
+## V4.3.2 Update
+
+- Removed EPS Beat column.
+- Removed Revenue Beat column.
+- Kept compact 今日价格范围 graphical display.
+- Kept 财报日期 column.
+- Kept sorting, bar chart, daily movement, and buy/sell history.
