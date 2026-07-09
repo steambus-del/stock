@@ -17,4 +17,8 @@ window.sharedTransactions = [
     { date: "2026-07-08", type: "buy", symbol: "NFLX", shares: 26.5537, price: 75.32 },
     { date: "2026-07-08", type: "buy", symbol: "NVDA", shares: 10.1378, price: 197.28 },
     { date: "2026-07-08", type: "buy", symbol: "VZ", shares: 46.7562, price: 42.78 }
+    { date: "2026-07-09", type: "buy", symbol: "MSFT", shares: 2.6625, price: 375.58 },
+    { date: "2026-07-09", type: "buy", symbol: "GOOGL", shares: 2.8396, price: 352.15 },
+    { date: "2026-07-09", type: "buy", symbol: "DIS", shares: 10.4893, price: 95.34 },
+    { date: "2026-07-09", type: "buy", symbol: "VZ", shares: 23.8164, price: 41.99 }
 ];
