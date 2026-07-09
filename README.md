@@ -22,3 +22,11 @@ Update `daily-history.js`.
 
 ## Note
 Finnhub free/API availability may affect earnings and beat/miss data. If data is unavailable, the table shows `--`.
+
+
+## V4.0.1 Fix
+
+- Fixed EPS Beat and Revenue Beat showing false `-100%`.
+- Missing/null earnings values now display `--`.
+- Earnings date still uses upcoming earnings.
+- EPS/Revenue beat now attempts to use the most recent reported earnings data instead of upcoming unreleased earnings.

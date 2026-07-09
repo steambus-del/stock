@@ -33,8 +33,105 @@ function calculatePositions(){const pos={};transactions.forEach(tx=>{if(!pos[tx.
 
 async function getQuote(symbol){try{const r=await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${API_KEY}`);const d=await r.json();return{currentPrice:Number(d.c)||0,highPrice:Number(d.h)||0,lowPrice:Number(d.l)||0,dailyChange:Number(d.d)||0,dailyChangePercent:Number(d.dp)||0}}catch(e){console.error(e);return{currentPrice:0,highPrice:0,lowPrice:0,dailyChange:0,dailyChangePercent:0}}}
 
-async function getEarningsInfo(symbol){try{const t=new Date(),from=t.toLocaleDateString("en-CA");const f=new Date(t);f.setMonth(f.getMonth()+12);const to=f.toLocaleDateString("en-CA");const r=await fetch(`https://finnhub.io/api/v1/calendar/earnings?from=${from}&to=${to}&symbol=${encodeURIComponent(symbol)}&token=${API_KEY}`);const d=await r.json();const arr=Array.isArray(d.earningsCalendar)?d.earningsCalendar.filter(x=>x.date).sort((a,b)=>String(a.date).localeCompare(String(b.date))):[];if(!arr.length)return{display:"--",days:999999,className:"earnings-unknown",epsBeat:NaN,revenueBeat:NaN};const item=arr[0],ed=new Date(item.date+"T00:00:00"),td=new Date(from+"T00:00:00"),days=Math.ceil((ed-td)/86400000);let cls=days<=7?"earnings-soon":days<=30?"earnings-medium":"earnings-later";return{display:item.date+"（"+days+"天）",days,className:cls,epsBeat:calcBeat(item.epsActual,item.epsEstimate),revenueBeat:calcBeat(item.revenueActual,item.revenueEstimate)}}catch(e){console.error(e);return{display:"--",days:999999,className:"earnings-unknown",epsBeat:NaN,revenueBeat:NaN}}}
-function calcBeat(actual,estimate){actual=Number(actual);estimate=Number(estimate);if(!Number.isFinite(actual)||!Number.isFinite(estimate)||estimate===0)return NaN;return (actual-estimate)/Math.abs(estimate)*100}
+async function getEarningsInfo(symbol) {
+    try {
+        const today = new Date();
+        const todayText = today.toLocaleDateString("en-CA");
+
+        const future = new Date(today);
+        future.setMonth(future.getMonth() + 12);
+        const futureText = future.toLocaleDateString("en-CA");
+
+        const past = new Date(today);
+        past.setMonth(past.getMonth() - 18);
+        const pastText = past.toLocaleDateString("en-CA");
+
+        // 1) Upcoming earnings date
+        const futureUrl = `https://finnhub.io/api/v1/calendar/earnings?from=${todayText}&to=${futureText}&symbol=${encodeURIComponent(symbol)}&token=${API_KEY}`;
+        const futureResponse = await fetch(futureUrl);
+        const futureData = await futureResponse.json();
+
+        const upcomingRows = Array.isArray(futureData.earningsCalendar)
+            ? futureData.earningsCalendar.filter(row => row.date).sort((a, b) => String(a.date).localeCompare(String(b.date)))
+            : [];
+
+        let display = "--";
+        let days = 999999;
+        let className = "earnings-unknown";
+
+        if (upcomingRows.length > 0) {
+            const upcoming = upcomingRows[0];
+            const earningsDate = new Date(upcoming.date + "T00:00:00");
+            const todayStart = new Date(todayText + "T00:00:00");
+            days = Math.ceil((earningsDate - todayStart) / 86400000);
+
+            className = days <= 7 ? "earnings-soon" : (days <= 30 ? "earnings-medium" : "earnings-later");
+            display = upcoming.date + "（" + days + "天）";
+        }
+
+        // 2) Most recent reported earnings for EPS/revenue beat.
+        // Upcoming rows usually do not have actual results yet.
+        const pastUrl = `https://finnhub.io/api/v1/calendar/earnings?from=${pastText}&to=${todayText}&symbol=${encodeURIComponent(symbol)}&token=${API_KEY}`;
+        const pastResponse = await fetch(pastUrl);
+        const pastData = await pastResponse.json();
+
+        const reportedRows = Array.isArray(pastData.earningsCalendar)
+            ? pastData.earningsCalendar
+                .filter(row => row.date)
+                .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+            : [];
+
+        let epsBeat = NaN;
+        let revenueBeat = NaN;
+
+        for (const row of reportedRows) {
+            const eps = calcBeat(row.epsActual, row.epsEstimate);
+            const rev = calcBeat(row.revenueActual, row.revenueEstimate);
+
+            if (Number.isFinite(eps) || Number.isFinite(rev)) {
+                epsBeat = eps;
+                revenueBeat = rev;
+                break;
+            }
+        }
+
+        return {
+            display,
+            days,
+            className,
+            epsBeat,
+            revenueBeat
+        };
+    } catch (error) {
+        console.error("获取财报信息失败:", symbol, error);
+        return {
+            display: "--",
+            days: 999999,
+            className: "earnings-unknown",
+            epsBeat: NaN,
+            revenueBeat: NaN
+        };
+    }
+}
+function calcBeat(actual, estimate) {
+    // Do not treat missing/null/empty values as zero.
+    // Many upcoming earnings records do not have actual EPS/revenue yet.
+    if (actual === null || actual === undefined || actual === "" ||
+        estimate === null || estimate === undefined || estimate === "") {
+        return NaN;
+    }
+
+    const actualNumber = Number(actual);
+    const estimateNumber = Number(estimate);
+
+    if (!Number.isFinite(actualNumber) ||
+        !Number.isFinite(estimateNumber) ||
+        estimateNumber === 0) {
+        return NaN;
+    }
+
+    return ((actualNumber - estimateNumber) / Math.abs(estimateNumber)) * 100;
+}
 
 async function loadPortfolio(){portfolioRows=[];const positions=calculatePositions();let totalValue=0,totalCost=0,totalGain=0;
 for(const symbol of Object.keys(positions)){const stock=positions[symbol],quote=await getQuote(symbol),earn=await getEarningsInfo(symbol);const currentPrice=quote.currentPrice,marketValue=stock.shares*currentPrice,costBasis=stock.costBasis,avgCost=stock.shares>0?costBasis/stock.shares:0,gainLoss=marketValue-costBasis,gainPercent=costBasis>0?gainLoss/costBasis*100:0;totalValue+=marketValue;totalCost+=costBasis;totalGain+=gainLoss;portfolioRows.push({symbol,shares:stock.shares,avgCost,currentPrice,dailyChange:quote.dailyChange,dailyChangePercent:quote.dailyChangePercent,marketValue,costBasis,gainLoss,gainPercent,priceRange:quote.lowPrice>0&&quote.highPrice>0?formatMoney(quote.lowPrice)+" - "+formatMoney(quote.highPrice):"-",earningsDisplay:earn.display,earningsSort:earn.days,earningsClass:earn.className,epsBeat:earn.epsBeat,revenueBeat:earn.revenueBeat})}
