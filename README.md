@@ -1,81 +1,24 @@
-# stock-portfolio-public-readonly-v3.0
+# stock-portfolio-public-readonly-v4.0
 
-Public read-only GitHub Pages stock portfolio tracker.
+Clean rebuilt public read-only GitHub Pages portfolio tracker.
 
-## Files
+## Included
+- Sortable stock table
+- Sortable bar chart
+- Default sort by 盈亏 high to low
+- Daily price change column
+- Earnings date column
+- EPS Beat column
+- Revenue Beat column
+- Daily movement table with pagination
+- Buy/sell history with pagination
+- Total 市值 / 总成本 / 总盈亏 footer
 
-- `index.html`
-- `style.css`
-- `portfolio-data.js`
-- `daily-history.js`
-- `app.js`
+## Edit holdings
+Update `portfolio-data.js`.
 
-## How to update holdings
+## Edit daily movement history
+Update `daily-history.js`.
 
-Edit `portfolio-data.js`.
-
-## How to update daily movement history
-
-At the end of a trading day, copy your current total unrealized gain into `daily-history.js`:
-
-```js
-window.dailySnapshots = [
-    { date: "2026-07-09", totalUnrealizedGain: 500.00, totalCost: 5000.00, note: "手动记录" }
-];
-```
-
-The site calculates:
-
-Daily Movement = Current total unrealized gain - previous snapshot total unrealized gain.
-
-## Notes
-
-GitHub Pages is static, so it cannot automatically save daily snapshots. You update `daily-history.js` manually.
-
-
-## V3.1 Update
-
-- Added `每日价格变动` column after `最新价格`.
-- Shows daily dollar change and percentage change from Finnhub quote data.
-
-- V3.1.1: 每日价格变动按涨跌着色（绿色=上涨，红色=下跌）。
-
-## V3.1.2 Update
-
-- Fixed empty 每日价格变动 cells causing table columns to shift.
-- 每日价格变动 now always displays a value, including $0.00 (0.00%).
-
-
-## V3.1.3 Update
-
-- Added total 市值 to the 总盈亏 footer row under the 市值 column.
-
-
-## V3.1.4 Update
-
-- Fixed 总盈亏 footer alignment after adding 每日价格变动 column.
-
-
-## V3.3 Update
-
-- Rebuilt sorting logic.
-- Stock table headers are clickable and sortable.
-- Bar chart sorting dropdown works independently.
-
-
-## V3.3.1 Update
-
-- Default stock table sorting is now 盈亏 高到低.
-- Default bar chart sorting is now 盈亏 高到低.
-
-
-## V3.4 Update
-
-- Added sortable 财报日期 column at the end of the stock table.
-- Automatically fetches upcoming earnings date from Finnhub earnings calendar.
-- Shows days remaining, such as `2026-07-30（21天）`.
-- Color coding:
-  - Red: within 7 days
-  - Orange: within 30 days
-  - Green: more than 30 days
-  - Gray: unavailable
+## Note
+Finnhub free/API availability may affect earnings and beat/miss data. If data is unavailable, the table shows `--`.
