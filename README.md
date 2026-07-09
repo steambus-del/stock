@@ -50,3 +50,11 @@ V4.3: Compact price range indicator.
 - Kept compact 今日价格范围 graphical display.
 - Kept 财报日期 column.
 - Kept sorting, bar chart, daily movement, and buy/sell history.
+
+
+## Compact Page Layout
+
+- Reduced overall page width to fit the actual table content.
+- Removed the large fixed minimum table width.
+- Centered all tables and sections within the compact container.
+- Chart, daily movement, and buy/sell history now align to the same narrower width.

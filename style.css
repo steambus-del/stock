@@ -1,8 +1,36 @@
 body{font-family:Arial,"Microsoft YaHei",sans-serif;background:#f4f6f8;margin:0;padding:24px}
-.container{max-width:1500px;margin:auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.container {
+    width: fit-content;
+    max-width: calc(100vw - 32px);
+    min-width: 0;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 18px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
 h1,h2{text-align:center}.note{text-align:center;font-size:14px;color:#6b7280;margin-bottom:10px}
-.table-wrap{width:100%;overflow-x:auto}table{width:100%;min-width:1350px;border-collapse:collapse;margin-top:10px;background:white}
-th,td{border:1px solid #d1d5db;padding:6px;text-align:center;white-space:nowrap}th{background:#f3f4f6}tfoot th{font-weight:bold;background:#eef2ff}
+.table-wrap {
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+    overflow-x: auto;
+}table {
+    width: auto;
+    max-width: 100%;
+    min-width: 0;
+    border-collapse: collapse;
+    margin: 10px auto 0;
+    background: white;
+    table-layout: auto;
+}
+th, td {
+    border: 1px solid #d1d5db;
+    padding: 5px 7px;
+    text-align: center;
+    white-space: nowrap;
+    width: 1%;
+}th{background:#f3f4f6}tfoot th{font-weight:bold;background:#eef2ff}
 .gain{color:#16a34a;font-weight:bold}.loss{color:#dc2626;font-weight:bold}.muted{color:#6b7280}
 .chart-summary{text-align:center;font-weight:bold;font-size:15px;margin-top:-6px;margin-bottom:2px;color:#374151}
 .chart-box{height:350px;width:100%;position:relative;margin-top:4px}
@@ -81,3 +109,34 @@ th,td{border:1px solid #d1d5db;padding:6px;text-align:center;white-space:nowrap}
 .compact-marker{position:absolute;top:-4px;width:2px;height:12px;background:#111827;transform:translateX(-50%)}
 .compact-labels{display:flex;justify-content:space-between;color:#6b7280}
 .compact-pos{text-align:center;font-weight:bold}
+
+
+h1, h2,
+.note,
+.chart-summary,
+.chart-controls,
+.chart-box,
+.pager {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.chart-box {
+    max-width: 100%;
+}
+
+@media (max-width: 900px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        max-width: calc(100vw - 20px);
+        padding: 12px;
+    }
+
+    th, td {
+        padding: 4px 6px;
+        font-size: 12px;
+    }
+}
