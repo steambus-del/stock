@@ -49,3 +49,8 @@ GitHub Pages is static, so it cannot automatically save daily snapshots. You upd
 ## V3.1.3 Update
 
 - Added total 市值 to the 总盈亏 footer row under the 市值 column.
+
+
+## V3.1.4 Update
+
+- Fixed 总盈亏 footer alignment after adding 每日价格变动 column.
