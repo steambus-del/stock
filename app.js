@@ -163,14 +163,18 @@ async function getQuote(symbol) {
         return {
             currentPrice: Number(data.c) || 0,
             highPrice: Number(data.h) || 0,
-            lowPrice: Number(data.l) || 0
+            lowPrice: Number(data.l) || 0,
+            dailyChange: Number(data.d) || 0,
+            dailyChangePercent: Number(data.dp) || 0
         };
     } catch (error) {
         console.error("获取股票价格失败:", symbol, error);
         return {
             currentPrice: 0,
             highPrice: 0,
-            lowPrice: 0
+            lowPrice: 0,
+            dailyChange: 0,
+            dailyChangePercent: 0
         };
     }
 }
@@ -220,6 +224,7 @@ async function loadPortfolio() {
             <td>${formatNumber(stock.shares)}</td>
             <td>${formatMoney(avgCost)}</td>
             <td>${formatMoney(currentPrice)}</td>
+            <td class="${quote.dailyChange > 0 ? "gain" : (quote.dailyChange < 0 ? "loss" : "")}">${quote.dailyChange > 0 ? "+" : ""}${formatMoney(quote.dailyChange)} <span class="${quote.dailyChange > 0 ? "gain" : (quote.dailyChange < 0 ? "loss" : "")}">(${formatPercent(quote.dailyChangePercent)})</span></td>
             <td>${formatMoney(marketValue)}</td>
             <td>${formatMoney(costBasis)}</td>
             <td class="${gainClass}">${gainText}</td>

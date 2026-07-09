@@ -31,3 +31,11 @@ Daily Movement = Current total unrealized gain - previous snapshot total unreali
 ## Notes
 
 GitHub Pages is static, so it cannot automatically save daily snapshots. You update `daily-history.js` manually.
+
+
+## V3.1 Update
+
+- Added `每日价格变动` column after `最新价格`.
+- Shows daily dollar change and percentage change from Finnhub quote data.
+
+- V3.1.1: 每日价格变动按涨跌着色（绿色=上涨，红色=下跌）。
