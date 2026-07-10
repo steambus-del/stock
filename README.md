@@ -21,3 +21,9 @@ This version is rebuilt from the uploaded files so the HTML and JavaScript match
 
 ## Update holdings
 Edit `portfolio-data.js`.
+
+
+## V5.2 Update
+- 每日价格变动 sorting now uses percentage change.
+- Added sortable 除息日 column.
+- Ex-dividend dates are color-coded by proximity.

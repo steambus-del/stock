@@ -203,6 +203,76 @@ async function getQuote(symbol) {
     }
 }
 
+
+function dateToLocalISO(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+}
+
+async function getExDividendInfo(symbol) {
+    try {
+        const today = new Date();
+        const from = new Date(today);
+        from.setDate(from.getDate() - 30);
+        const to = new Date(today);
+        to.setFullYear(to.getFullYear() + 1);
+
+        const url =
+            "https://finnhub.io/api/v1/stock/dividend2?symbol=" +
+            encodeURIComponent(symbol) +
+            "&from=" + dateToLocalISO(from) +
+            "&to=" + dateToLocalISO(to) +
+            "&token=" + encodeURIComponent(API_KEY);
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("HTTP " + response.status);
+
+        const payload = await response.json();
+        const records = Array.isArray(payload)
+            ? payload
+            : Array.isArray(payload.data) ? payload.data : [];
+
+        const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        const upcoming = records
+            .map(item => ({
+                date: item.date || item.exDate || item.exDividendDate || "",
+                amount: Number(item.amount || item.dividend || item.cashAmount || 0)
+            }))
+            .filter(item => item.date)
+            .map(item => ({
+                ...item,
+                days: Math.ceil(
+                    (new Date(item.date + "T00:00:00") - start) / 86400000
+                )
+            }))
+            .filter(item => item.days >= 0)
+            .sort((a, b) => a.days - b.days);
+
+        if (!upcoming.length) {
+            return { display: "--", sortValue: 999999, className: "ex-dividend-unknown" };
+        }
+
+        const next = upcoming[0];
+        const className =
+            next.days <= 7 ? "ex-dividend-soon" :
+            next.days <= 30 ? "ex-dividend-medium" :
+            "ex-dividend-later";
+
+        return {
+            display: next.date + "（" + next.days + "天）" +
+                (next.amount > 0 ? " · " + formatMoney(next.amount) : ""),
+            sortValue: next.days,
+            className
+        };
+    } catch (error) {
+        console.error("获取除息日失败:", symbol, error);
+        return { display: "--", sortValue: 999999, className: "ex-dividend-unknown" };
+    }
+}
+
 async function loadPortfolio() {
     portfolioRows = [];
 
@@ -215,13 +285,16 @@ async function loadPortfolio() {
     const symbols = Object.keys(positions);
 
     const quoteResults = await Promise.all(
-        symbols.map(async symbol => ({
-            symbol,
-            quote: await getQuote(symbol)
-        }))
+        symbols.map(async symbol => {
+            const [quote, exDividend] = await Promise.all([
+                getQuote(symbol),
+                getExDividendInfo(symbol)
+            ]);
+            return { symbol, quote, exDividend };
+        })
     );
 
-    quoteResults.forEach(({ symbol, quote }) => {
+    quoteResults.forEach(({ symbol, quote, exDividend }) => {
         const stock = positions[symbol];
 
         const currentPrice = quote.currentPrice;
@@ -249,7 +322,10 @@ async function loadPortfolio() {
             priceRange:
                 quote.lowPrice > 0 && quote.highPrice > 0
                     ? formatMoney(quote.lowPrice) + " - " + formatMoney(quote.highPrice)
-                    : "--"
+                    : "--",
+            exDividendDisplay: exDividend.display,
+            exDividendSort: exDividend.sortValue,
+            exDividendClass: exDividend.className
         });
     });
 
@@ -338,6 +414,7 @@ function drawPortfolioTable() {
             </td>
             <td class="${gainClass}">${formatPercent(stock.gainPercent)}</td>
             <td>${stock.priceRange}</td>
+            <td class="${stock.exDividendClass}">${stock.exDividendDisplay}</td>
         `;
 
         portfolioBody.appendChild(row);
