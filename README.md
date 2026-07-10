@@ -35,3 +35,11 @@ Edit `portfolio-data.js`.
 - Pie labels use white text with a black outline and are positioned closer to the outer edge.
 - 当前市值 and 总盈亏 are green when current value is above total invested, red when below.
 - 买入 is green and 卖出 is red in the transaction table.
+
+
+## V5.3.4 Update
+
+- Restored gain/loss labels to the top of every bar in 投资盈亏图.
+- Bar labels use `anchor: end`, `align: top`, and `offset: 6`.
+- Moved pie-chart ticker labels about 10% farther toward the outer edge.
+- Pie labels remain inside the slices and keep the white text with black outline.
