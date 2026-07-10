@@ -18,7 +18,7 @@
           <th><button class="sort-header" data-sort-key="shares">持股数量</button></th>
           <th><button class="sort-header" data-sort-key="avgCost">平均成本</button></th>
           <th><button class="sort-header" data-sort-key="currentPrice">最新价格</button></th>
-          <th><button class="sort-header" data-sort-key="dailyChange">每日价格变动</button></th>
+          <th><button class="sort-header" data-sort-key="dailyChangePercent">每日价格变动</button></th>
           <th><button class="sort-header" data-sort-key="marketValue">市值</button></th>
           <th><button class="sort-header" data-sort-key="costBasis">总成本</button></th>
           <th><button class="sort-header" data-sort-key="gainLoss">盈亏</button></th>
@@ -57,6 +57,12 @@
     </select>
   </div>
   <div class="chart-box"><canvas id="portfolioChart"></canvas></div>
+
+  <h2>股票持仓占比</h2>
+  <div class="note">按当前市值计算每只股票在投资组合中的占比。</div>
+  <div class="pie-chart-box">
+    <canvas id="ownershipPieChart"></canvas>
+  </div>
 
   <h2>买卖记录</h2>
   <div class="table-wrap">

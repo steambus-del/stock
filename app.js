@@ -14,6 +14,7 @@ const transactions = Array.isArray(window.sharedTransactions)
 
 let portfolioRows = [];
 let portfolioChart = null;
+let ownershipPieChart = null;
 let transactionPage = 1;
 
 let tableSortKey = "gainLoss";
@@ -34,6 +35,7 @@ const totalGainPercentCell = $("totalGainPercentCell");
 const chartSummary = $("chartSummary");
 const chartSortSelect = $("chartSortSelect");
 const portfolioChartCanvas = $("portfolioChart");
+const ownershipPieCanvas = $("ownershipPieChart");
 
 const txPrevButton = $("txPrevButton");
 const txNextButton = $("txNextButton");
@@ -280,6 +282,7 @@ async function loadPortfolio() {
 
     drawPortfolioTable();
     drawChartFromCurrentRows();
+    drawOwnershipPieChart();
     drawTransactions();
 }
 
@@ -365,6 +368,90 @@ function drawChartFromCurrentRows() {
         rows.map(row => row.gainLoss),
         rows.map(row => row.gainPercent)
     );
+}
+
+
+function drawOwnershipPieChart() {
+    if (!window.Chart || !ownershipPieCanvas) {
+        return;
+    }
+
+    if (ownershipPieChart) {
+        ownershipPieChart.destroy();
+    }
+
+    const validRows = portfolioRows.filter(row => row.marketValue > 0);
+    const totalMarketValue = validRows.reduce(
+        (sum, row) => sum + row.marketValue,
+        0
+    );
+
+    ownershipPieChart = new Chart(ownershipPieCanvas, {
+        type: "pie",
+        data: {
+            labels: validRows.map(row => row.symbol),
+            datasets: [
+                {
+                    data: validRows.map(row => row.marketValue)
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: "right",
+                    labels: {
+                        boxWidth: 14,
+                        padding: 10
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label(context) {
+                            const value = Number(context.raw || 0);
+                            const percentage =
+                                totalMarketValue > 0
+                                    ? (value / totalMarketValue) * 100
+                                    : 0;
+
+                            return (
+                                context.label +
+                                "：" +
+                                formatMoney(value) +
+                                " (" +
+                                percentage.toFixed(2) +
+                                "%)"
+                            );
+                        }
+                    }
+                },
+                datalabels: {
+                    color: "#ffffff",
+                    font: {
+                        weight: "bold",
+                        size: 11
+                    },
+                    formatter(value, context) {
+                        if (totalMarketValue <= 0) {
+                            return "";
+                        }
+
+                        const percentage =
+                            (Number(value) / totalMarketValue) * 100;
+
+                        return percentage >= 3
+                            ? context.chart.data.labels[context.dataIndex] +
+                                "\n" +
+                                percentage.toFixed(1) +
+                                "%"
+                            : "";
+                    }
+                }
+            }
+        }
+    });
 }
 
 function drawTransactions() {

@@ -21,3 +21,11 @@ This version is rebuilt from the uploaded files so the HTML and JavaScript match
 
 ## Update holdings
 Edit `portfolio-data.js`.
+
+
+## V5.3 Update
+
+- 每日价格变动 sorting now uses percentage change instead of dollar change.
+- Added 股票持仓占比 pie chart before 买卖记录.
+- Pie chart allocation is based on current market value.
+- Tooltip shows market value and portfolio percentage.
