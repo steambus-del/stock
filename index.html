@@ -24,7 +24,6 @@
           <th><button class="sort-header" data-sort-key="gainLoss">盈亏</button></th>
           <th><button class="sort-header" data-sort-key="gainPercent">盈亏百分比</button></th>
           <th>今日价格范围</th>
-          <th><button class="sort-header" data-sort-key="earningsSort">财报日期</button></th>
         </tr>
       </thead>
       <tbody id="portfolioBody"></tbody>
@@ -35,7 +34,7 @@
           <th id="totalCostCell">$0.00</th>
           <th id="totalGainCell">$0.00</th>
           <th id="totalGainPercentCell">0.00%</th>
-          <th colspan="4"></th>
+          <th></th>
         </tr>
       </tfoot>
     </table>
@@ -58,15 +57,6 @@
     </select>
   </div>
   <div class="chart-box"><canvas id="portfolioChart"></canvas></div>
-
-  <h2>每日盈亏</h2>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>日期</th><th>当日变动</th><th>当日变动百分比</th><th>当日总未实现盈亏</th><th>对比前一日总未实现盈亏</th><th>说明</th></tr></thead>
-      <tbody id="dailyMovementBody"></tbody>
-    </table>
-  </div>
-  <div class="pager"><button id="dailyPrevButton">上一页</button><span id="dailyPageInfo">第 1 页</span><button id="dailyNextButton">下一页</button></div>
 
   <h2>买卖记录</h2>
   <div class="table-wrap">

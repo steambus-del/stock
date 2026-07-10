@@ -58,3 +58,15 @@ V4.3: Compact price range indicator.
 - Removed the large fixed minimum table width.
 - Centered all tables and sections within the compact container.
 - Chart, daily movement, and buy/sell history now align to the same narrower width.
+
+
+## Fast Compact Update
+
+- Removed 财报日期 column.
+- Removed Finnhub earnings calendar requests.
+- Changed 今日价格范围 back to plain low-high numbers.
+- Kept the compact page width, table sorting, chart, daily movement, and buy/sell history.
+
+
+## Update
+- Removed the 每日投资组合变动 section.

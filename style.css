@@ -39,76 +39,33 @@ th, td {
 .sort-header{background:transparent;color:inherit;border:none;padding:0;margin:0;font:inherit;font-weight:bold;cursor:pointer}.sort-header:hover{color:#2563eb;text-decoration:underline}
 .sort-header.active-sort::after{content:" ▲";font-size:11px}.sort-header.active-sort.desc::after{content:" ▼"}
 .chart-controls{text-align:center;margin:6px 0 4px;font-size:14px}.chart-controls select{padding:4px 8px;border:1px solid #d1d5db;border-radius:6px}
-.earnings-soon{color:#dc2626;font-weight:bold}.earnings-medium{color:#d97706;font-weight:bold}.earnings-later{color:#16a34a;font-weight:bold}.earnings-unknown{color:#6b7280}
 
 
-.range-cell {
-    min-width: 180px;
-}
-
-.range-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    align-items: stretch;
-}
-
-.range-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: #6b7280;
-}
-
-.range-track {
-    position: relative;
-    height: 8px;
-    background: #e5e7eb;
-    border-radius: 999px;
-    overflow: visible;
-}
-
-.range-fill {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 8px;
-    border-radius: 999px;
-    background: linear-gradient(90deg, #dc2626, #f59e0b, #16a34a);
-    width: 100%;
-    opacity: 0.85;
-}
-
-.range-marker {
-    position: absolute;
-    top: -4px;
-    width: 3px;
-    height: 16px;
-    background: #111827;
-    border-radius: 999px;
-    transform: translateX(-50%);
-}
-
-.range-current {
-    text-align: center;
-    font-size: 11px;
-    color: #111827;
-    font-weight: bold;
-}
-
-.range-missing {
-    color: #6b7280;
-    font-size: 12px;
-}
 
 
-.range-cell{min-width:170px}
-.compact-range{display:flex;flex-direction:column;gap:2px;font-size:11px}
-.compact-track{position:relative;height:4px;background:#d1d5db;border-radius:999px;margin:2px 0}
-.compact-fill{position:absolute;left:0;top:0;right:0;bottom:0;background:linear-gradient(90deg,#dc2626,#f59e0b,#16a34a);border-radius:999px}
-.compact-marker{position:absolute;top:-4px;width:2px;height:12px;background:#111827;transform:translateX(-50%)}
-.compact-labels{display:flex;justify-content:space-between;color:#6b7280}
-.compact-pos{text-align:center;font-weight:bold}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 h1, h2,
