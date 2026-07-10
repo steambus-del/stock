@@ -29,3 +29,9 @@ Edit `portfolio-data.js`.
 - Added 股票持仓占比 pie chart before 买卖记录.
 - Pie chart allocation is based on current market value.
 - Tooltip shows market value and portfolio percentage.
+
+
+## V5.3.2 Color Enhancements
+- Pie labels use white text with a black outline and are positioned closer to the outer edge.
+- 当前市值 and 总盈亏 are green when current value is above total invested, red when below.
+- 买入 is green and 卖出 is red in the transaction table.

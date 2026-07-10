@@ -105,3 +105,14 @@ h1, h2,
     margin: 8px auto 20px;
     position: relative;
 }
+
+
+.buy-action {
+    color: #16a34a;
+    font-weight: bold;
+}
+
+.sell-action {
+    color: #dc2626;
+    font-weight: bold;
+}

@@ -268,17 +268,18 @@ async function loadPortfolio() {
     totalGainPercentCell.textContent = formatPercent(totalGainPercent);
     totalGainPercentCell.className = totalGain >= 0 ? "gain" : "loss";
 
-    chartSummary.textContent =
+    const overallClass = totalValue >= totalCost ? "gain" : "loss";
+    chartSummary.innerHTML =
         "总投入：" +
         formatMoney(totalCost) +
-        "　|　当前市值：" +
+        '　|　<span class="' + overallClass + '">当前市值：' +
         formatMoney(totalValue) +
-        "　|　总盈亏：" +
+        '</span>　|　<span class="' + overallClass + '">总盈亏：' +
         (totalGain >= 0 ? "+" : "") +
         formatMoney(totalGain) +
         " (" +
         formatPercent(totalGainPercent) +
-        ")";
+        ")</span>";
 
     drawPortfolioTable();
     drawChartFromCurrentRows();
@@ -429,9 +430,16 @@ function drawOwnershipPieChart() {
                 },
                 datalabels: {
                     color: "#ffffff",
+                    textStrokeColor: "#000000",
+                    textStrokeWidth: 3,
+                    anchor: "end",
+                    align: "end",
+                    offset: 12,
+                    clamp: true,
+                    clip: false,
                     font: {
                         weight: "bold",
-                        size: 11
+                        size: 12
                     },
                     formatter(value, context) {
                         if (totalMarketValue <= 0) {
@@ -476,7 +484,7 @@ function drawTransactions() {
 
         row.innerHTML = `
             <td>${tx.date}</td>
-            <td>${tx.type === "buy" ? "买入" : "卖出"}</td>
+            <td class="${tx.type === "buy" ? "buy-action" : "sell-action"}">${tx.type === "buy" ? "买入" : "卖出"}</td>
             <td>${tx.symbol}</td>
             <td>${formatNumber(tx.shares)}</td>
             <td>${formatMoney(tx.price)}</td>
