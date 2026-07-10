@@ -43,3 +43,11 @@ Edit `portfolio-data.js`.
 - Bar labels use `anchor: end`, `align: top`, and `offset: 6`.
 - Moved pie-chart ticker labels about 10% farther toward the outer edge.
 - Pie labels remain inside the slices and keep the white text with black outline.
+
+
+## V5.3.5 Update
+
+- Moved pie-chart ticker labels about 30% farther outward.
+- Labels remain inside the pie slices.
+- White bold text and black outline are preserved.
+- Bar-chart labels remain above each bar.

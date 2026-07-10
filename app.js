@@ -434,7 +434,7 @@ function drawOwnershipPieChart() {
                     textStrokeWidth: 3,
                     anchor: "center",
                     align: "center",
-                    offset: -8,
+                    offset: 10,
                     clamp: true,
                     clip: false,
                     font: {
