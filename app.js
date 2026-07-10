@@ -432,9 +432,9 @@ function drawOwnershipPieChart() {
                     color: "#ffffff",
                     textStrokeColor: "#000000",
                     textStrokeWidth: 3,
-                    anchor: "end",
-                    align: "end",
-                    offset: 12,
+                    anchor: "center",
+                    align: "center",
+                    offset: -18,
                     clamp: true,
                     clip: false,
                     font: {
@@ -535,9 +535,9 @@ function drawChart(labels, gains, gainPercents) {
         plugins.datalabels = {
             clamp: true,
             clip: false,
-            anchor: "end",
+            anchor: "center",
             align: "top",
-            offset: 6,
+            offset: -18,
             color(context) {
                 return context.dataset.data[context.dataIndex] >= 0
                     ? "#16a34a"
