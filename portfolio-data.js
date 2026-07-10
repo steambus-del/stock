@@ -1,12 +1,5 @@
-// Public read-only portfolio data
-// Edit this file to update what everyone sees on GitHub Pages.
-//
-// type:
-//   "buy"  = 买入 / 增加持股
-//   "sell" = 卖出 / 减少持股
-//
-// IMPORTANT:
-// Use window.sharedTransactions so app.js can read the data.
+// Public read-only portfolio data.
+// Change shares from 1 to your real share amount.
 
 window.sharedTransactions = [
     { date: "2026-07-08", type: "buy", symbol: "DIS", shares: 20.65, price: 96.85 },
