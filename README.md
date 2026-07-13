@@ -82,3 +82,26 @@ Edit `portfolio-data.js`.
 - Moved 股票持仓占比 to the right side.
 - Desktop layout uses approximately 40% history / 60% pie chart.
 - Mobile layout still stacks vertically.
+
+
+## V5.4.0 History Add Button
+
+- Added an 添加 button to 盈亏历史.
+- Users can enter a date and gain/loss amount.
+- A newer entry with the same date replaces the older entry.
+- Added entries are saved in the current browser using localStorage.
+- No delete or export button was added.
+- The shared `gain-loss-history.js` file remains the public default history.
+
+
+## Automatic gain/loss history
+
+1. Upload all files and folders.
+2. Go to GitHub repository Settings → Secrets and variables → Actions.
+3. Add a repository secret named `FINNHUB_API_KEY`.
+4. Go to Settings → Actions → General.
+5. Set Workflow permissions to Read and write permissions.
+6. Open Actions → Record gain-loss history → Run workflow to test.
+
+The workflow runs at 22:30 UTC Monday-Friday, after the normal U.S. market close.
+It records total unrealized gain/loss and replaces the same date if run twice.

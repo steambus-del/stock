@@ -60,7 +60,10 @@
 
   <div class="allocation-history-grid">
   <section class="dashboard-panel history-panel">
-    <h2>盈亏历史</h2>
+    <div class="history-heading-row">
+      <h2>盈亏历史</h2>
+      <button id="openHistoryDialogButton" class="history-add-button">添加</button>
+    </div>
     <div class="table-wrap">
       <table class="history-table">
         <thead><tr><th>日期</th><th>盈利 / 亏损</th><th>每日盈亏</th></tr></thead>
@@ -88,6 +91,26 @@
     </table>
   </div>
   <div class="pager"><button id="txPrevButton">上一页</button><span id="txPageInfo">第 1 页</span><button id="txNextButton">下一页</button></div>
+
+  <div id="historyDialog" class="history-dialog-overlay" hidden>
+    <div class="history-dialog" role="dialog" aria-modal="true" aria-labelledby="historyDialogTitle">
+      <h3 id="historyDialogTitle">添加盈亏历史</h3>
+
+      <label for="historyDateInput">日期</label>
+      <input id="historyDateInput" type="date">
+
+      <label for="historyGainLossInput">盈利 / 亏损</label>
+      <input id="historyGainLossInput" type="number" step="0.01" placeholder="例如：523.42 或 -186.35">
+
+      <div id="historyFormError" class="history-form-error"></div>
+
+      <div class="history-dialog-actions">
+        <button id="saveHistoryButton" class="history-save-button">保存</button>
+        <button id="cancelHistoryButton" class="history-cancel-button">取消</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script src="./portfolio-data.js"></script>

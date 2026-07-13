@@ -45,12 +45,70 @@ const txPageInfo = $("txPageInfo");
 const historyPrevButton = $("historyPrevButton");
 const historyNextButton = $("historyNextButton");
 const historyPageInfo = $("historyPageInfo");
-const gainLossHistoryRecords = Array.isArray(window.gainLossHistory)
-    ? window.gainLossHistory
-        .map(r => ({date:String(r.date||""), gainLoss:Number(r.gainLoss||0)}))
-        .filter(r => r.date)
-        .sort((a,b) => b.date.localeCompare(a.date))
-    : [];
+const openHistoryDialogButton = $("openHistoryDialogButton");
+const historyDialog = $("historyDialog");
+const historyDateInput = $("historyDateInput");
+const historyGainLossInput = $("historyGainLossInput");
+const historyFormError = $("historyFormError");
+const saveHistoryButton = $("saveHistoryButton");
+const cancelHistoryButton = $("cancelHistoryButton");
+let gainLossHistoryRecords = [];
+
+function loadGainLossHistoryRecords() {
+    const sharedRecords = Array.isArray(window.gainLossHistory)
+        ? window.gainLossHistory
+            .map(record => ({
+                date: String(record.date || ""),
+                gainLoss: Number(record.gainLoss || 0)
+            }))
+            .filter(record => record.date)
+        : [];
+
+    let localRecords = [];
+
+    try {
+        const saved = JSON.parse(
+            localStorage.getItem("portfolioGainLossHistory") || "[]"
+        );
+
+        if (Array.isArray(saved)) {
+            localRecords = saved
+                .map(record => ({
+                    date: String(record.date || ""),
+                    gainLoss: Number(record.gainLoss || 0)
+                }))
+                .filter(record => record.date);
+        }
+    } catch (error) {
+        console.warn("无法读取本地盈亏历史:", error);
+    }
+
+    const recordsByDate = new Map();
+
+    sharedRecords.forEach(record => {
+        recordsByDate.set(record.date, record);
+    });
+
+    localRecords.forEach(record => {
+        recordsByDate.set(record.date, record);
+    });
+
+    gainLossHistoryRecords = [...recordsByDate.values()]
+        .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function saveLocalGainLossHistory() {
+    try {
+        localStorage.setItem(
+            "portfolioGainLossHistory",
+            JSON.stringify(gainLossHistoryRecords)
+        );
+    } catch (error) {
+        console.error("无法保存本地盈亏历史:", error);
+    }
+}
+
+loadGainLossHistoryRecords();
 
 if (window.Chart && window.ChartDataLabels) {
     Chart.register(ChartDataLabels);
@@ -93,6 +151,90 @@ if (historyNextButton) {
     }
   });
 }
+
+
+function openHistoryDialog() {
+    if (!historyDialog) return;
+
+    const today = new Date();
+    const localDate = new Date(
+        today.getTime() - today.getTimezoneOffset() * 60000
+    ).toISOString().slice(0, 10);
+
+    historyDateInput.value = localDate;
+    historyGainLossInput.value = "";
+    historyFormError.textContent = "";
+    historyDialog.hidden = false;
+    historyGainLossInput.focus();
+}
+
+function closeHistoryDialog() {
+    if (!historyDialog) return;
+    historyDialog.hidden = true;
+    historyFormError.textContent = "";
+}
+
+function saveHistoryEntry() {
+    const date = String(historyDateInput.value || "").trim();
+    const gainLoss = Number(historyGainLossInput.value);
+
+    if (!date) {
+        historyFormError.textContent = "请选择日期。";
+        return;
+    }
+
+    if (!Number.isFinite(gainLoss)) {
+        historyFormError.textContent = "请输入有效的盈利或亏损金额。";
+        return;
+    }
+
+    const existingIndex = gainLossHistoryRecords.findIndex(
+        record => record.date === date
+    );
+
+    const newRecord = { date, gainLoss };
+
+    if (existingIndex >= 0) {
+        gainLossHistoryRecords[existingIndex] = newRecord;
+    } else {
+        gainLossHistoryRecords.push(newRecord);
+    }
+
+    gainLossHistoryRecords.sort(
+        (a, b) => b.date.localeCompare(a.date)
+    );
+
+    saveLocalGainLossHistory();
+    gainLossHistoryPage = 1;
+    drawGainLossHistory();
+    closeHistoryDialog();
+}
+
+if (openHistoryDialogButton) {
+    openHistoryDialogButton.addEventListener("click", openHistoryDialog);
+}
+
+if (saveHistoryButton) {
+    saveHistoryButton.addEventListener("click", saveHistoryEntry);
+}
+
+if (cancelHistoryButton) {
+    cancelHistoryButton.addEventListener("click", closeHistoryDialog);
+}
+
+if (historyDialog) {
+    historyDialog.addEventListener("click", event => {
+        if (event.target === historyDialog) {
+            closeHistoryDialog();
+        }
+    });
+}
+
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && historyDialog && !historyDialog.hidden) {
+        closeHistoryDialog();
+    }
+});
 
 if (txPrevButton) {
     txPrevButton.addEventListener("click", () => {
