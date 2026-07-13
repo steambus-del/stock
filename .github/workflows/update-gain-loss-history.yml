@@ -3,7 +3,7 @@ name: Record gain-loss history
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 22 * * 1-5"
+    - cron: "10 21 * * 1-5"
 
 permissions:
   contents: write
