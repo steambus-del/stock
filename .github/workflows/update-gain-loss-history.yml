@@ -8,22 +8,37 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: gain-loss-history
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: Update history
+
+      - name: Update gain-loss history
         env:
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
         run: python scripts/update_gain_loss_history.py
-      - name: Commit history
+
+      - name: Commit updated history
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add gain-loss-history.js
-          git diff --cached --quiet || git commit -m "Update gain-loss history"
-          git push
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update gain-loss history"
+            git push
+          fi
