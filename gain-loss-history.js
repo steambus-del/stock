@@ -3,4 +3,5 @@ window.gainLossHistory = [
   // { date: "2026-07-15", gainLoss: 523.42 },
   { date: "2026-07-9", gainLoss: 210 },
   { date: "2026-07-10", gainLoss: 181 },
+  { date: "2026-07-13", gainLoss: 21 },
 ];
