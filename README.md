@@ -51,3 +51,26 @@ Edit `portfolio-data.js`.
 - Labels remain inside the pie slices.
 - White bold text and black outline are preserved.
 - Bar-chart labels remain above each bar.
+
+## V5.3.6
+- Added 盈亏历史 to the right of 股票持仓占比.
+- Added gain-loss-history.js.
+- Shows 日期 and 盈利 / 亏损.
+- Green for gains, red for losses.
+- 10 records per page.
+
+
+## V5.3.7 Daily Gain/Loss
+
+- Added 每日盈亏 column to 盈亏历史.
+- 每日盈亏 = current record gain/loss minus the previous chronological record.
+- Positive daily change is green.
+- Negative daily change is red.
+- The oldest available record shows `--` because there is no earlier record to compare.
+
+
+## V5.3.8 History Color Fix
+
+- 盈利 / 亏损 is explicitly green when positive and red when negative.
+- 每日盈亏 is explicitly green when positive and red when negative.
+- Added dedicated CSS classes with `!important` to prevent color overrides.

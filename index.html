@@ -58,12 +58,28 @@
   </div>
   <div class="chart-box"><canvas id="portfolioChart"></canvas></div>
 
-  <h2>股票持仓占比</h2>
-  <div class="pie-chart-box">
-    <canvas id="ownershipPieChart"></canvas>
-  </div>
+  <div class="allocation-history-grid">
+  <section class="dashboard-panel">
+    <h2>股票持仓占比</h2>
+    <div class="pie-chart-box"><canvas id="ownershipPieChart"></canvas></div>
+  </section>
+  <section class="dashboard-panel history-panel">
+    <h2>盈亏历史</h2>
+    <div class="table-wrap">
+      <table class="history-table">
+        <thead><tr><th>日期</th><th>盈利 / 亏损</th><th>每日盈亏</th></tr></thead>
+        <tbody id="gainLossHistoryBody"></tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <button id="historyPrevButton">上一页</button>
+      <span id="historyPageInfo">第 1 页</span>
+      <button id="historyNextButton">下一页</button>
+    </div>
+  </section>
+</div>
 
-  <h2>买卖记录</h2>
+<h2>买卖记录</h2>
   <div class="table-wrap">
     <table>
       <thead><tr><th>日期</th><th>操作</th><th>股票代码</th><th>股数</th><th>交易价格</th><th>交易金额</th></tr></thead>
@@ -74,6 +90,7 @@
 </div>
 
 <script src="./portfolio-data.js"></script>
+<script src="./gain-loss-history.js"></script>
 <script src="./app.js"></script>
 </body>
 </html>

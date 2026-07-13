@@ -16,6 +16,7 @@ let portfolioRows = [];
 let portfolioChart = null;
 let ownershipPieChart = null;
 let transactionPage = 1;
+let gainLossHistoryPage = 1;
 
 let tableSortKey = "gainLoss";
 let tableSortDirection = "desc";
@@ -26,6 +27,7 @@ const $ = id => document.getElementById(id);
 
 const portfolioBody = $("portfolioBody");
 const transactionBody = $("transactionBody");
+const gainLossHistoryBody = $("gainLossHistoryBody");
 
 const totalValueCell = $("totalValueCell");
 const totalCostCell = $("totalCostCell");
@@ -40,6 +42,15 @@ const ownershipPieCanvas = $("ownershipPieChart");
 const txPrevButton = $("txPrevButton");
 const txNextButton = $("txNextButton");
 const txPageInfo = $("txPageInfo");
+const historyPrevButton = $("historyPrevButton");
+const historyNextButton = $("historyNextButton");
+const historyPageInfo = $("historyPageInfo");
+const gainLossHistoryRecords = Array.isArray(window.gainLossHistory)
+    ? window.gainLossHistory
+        .map(r => ({date:String(r.date||""), gainLoss:Number(r.gainLoss||0)}))
+        .filter(r => r.date)
+        .sort((a,b) => b.date.localeCompare(a.date))
+    : [];
 
 if (window.Chart && window.ChartDataLabels) {
     Chart.register(ChartDataLabels);
@@ -62,6 +73,25 @@ document.querySelectorAll(".sort-header").forEach(button => {
 
 if (chartSortSelect) {
     chartSortSelect.addEventListener("change", drawChartFromCurrentRows);
+}
+
+
+if (historyPrevButton) {
+  historyPrevButton.addEventListener("click", () => {
+    if (gainLossHistoryPage > 1) {
+      gainLossHistoryPage--;
+      drawGainLossHistory();
+    }
+  });
+}
+if (historyNextButton) {
+  historyNextButton.addEventListener("click", () => {
+    const totalPages = Math.max(1, Math.ceil(gainLossHistoryRecords.length / PAGE_SIZE));
+    if (gainLossHistoryPage < totalPages) {
+      gainLossHistoryPage++;
+      drawGainLossHistory();
+    }
+  });
 }
 
 if (txPrevButton) {
@@ -284,6 +314,7 @@ async function loadPortfolio() {
     drawPortfolioTable();
     drawChartFromCurrentRows();
     drawOwnershipPieChart();
+    drawGainLossHistory();
     drawTransactions();
 }
 
@@ -460,6 +491,97 @@ function drawOwnershipPieChart() {
             }
         }
     });
+}
+
+
+function drawGainLossHistory() {
+    if (!gainLossHistoryBody) return;
+    gainLossHistoryBody.innerHTML = "";
+
+    const totalPages = Math.max(
+        1,
+        Math.ceil(gainLossHistoryRecords.length / PAGE_SIZE)
+    );
+
+    gainLossHistoryPage = Math.min(
+        Math.max(gainLossHistoryPage, 1),
+        totalPages
+    );
+
+    const startIndex = (gainLossHistoryPage - 1) * PAGE_SIZE;
+    const records = gainLossHistoryRecords.slice(
+        startIndex,
+        startIndex + PAGE_SIZE
+    );
+
+    if (!records.length) {
+        const row = document.createElement("tr");
+        row.innerHTML =
+            '<td colspan="3" class="empty-history">暂无盈亏历史记录</td>';
+        gainLossHistoryBody.appendChild(row);
+    } else {
+        records.forEach((record, pageIndex) => {
+            const globalIndex = startIndex + pageIndex;
+
+            // Records are sorted newest first.
+            // The next item in the array is the previous chronological day.
+            const previousRecord =
+                gainLossHistoryRecords[globalIndex + 1] || null;
+
+            const dailyGainLoss = previousRecord
+                ? record.gainLoss - previousRecord.gainLoss
+                : null;
+
+            const totalClass =
+                record.gainLoss > 0
+                    ? "history-gain"
+                    : record.gainLoss < 0
+                        ? "history-loss"
+                        : "history-neutral";
+
+            const dailyClass =
+                dailyGainLoss === null
+                    ? "history-neutral"
+                    : dailyGainLoss > 0
+                        ? "history-gain"
+                        : dailyGainLoss < 0
+                            ? "history-loss"
+                            : "history-neutral";
+
+            const dailyDisplay =
+                dailyGainLoss === null
+                    ? "--"
+                    : (dailyGainLoss > 0 ? "+" : "") +
+                      formatMoney(dailyGainLoss);
+
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${record.date}</td>
+                <td class="${totalClass}">
+                    ${record.gainLoss > 0 ? "+" : ""}${formatMoney(record.gainLoss)}
+                </td>
+                <td class="${dailyClass}">
+                    ${dailyDisplay}
+                </td>
+            `;
+
+            gainLossHistoryBody.appendChild(row);
+        });
+    }
+
+    if (historyPageInfo) {
+        historyPageInfo.textContent =
+            `第 ${gainLossHistoryPage} 页 / 共 ${totalPages} 页`;
+    }
+
+    if (historyPrevButton) {
+        historyPrevButton.disabled = gainLossHistoryPage <= 1;
+    }
+
+    if (historyNextButton) {
+        historyNextButton.disabled = gainLossHistoryPage >= totalPages;
+    }
 }
 
 function drawTransactions() {
