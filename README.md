@@ -74,3 +74,11 @@ Edit `portfolio-data.js`.
 - 盈利 / 亏损 is explicitly green when positive and red when negative.
 - 每日盈亏 is explicitly green when positive and red when negative.
 - Added dedicated CSS classes with `!important` to prevent color overrides.
+
+
+## V5.3.9 Layout Update
+
+- Moved 盈亏历史 to the left side.
+- Moved 股票持仓占比 to the right side.
+- Desktop layout uses approximately 40% history / 60% pie chart.
+- Mobile layout still stacks vertically.
