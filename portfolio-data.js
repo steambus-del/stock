@@ -21,5 +21,9 @@ window.sharedTransactions = [
     { date: "2026-07-13", type: "buy", symbol: "MU", shares: 1.0969, price: 911.61},
     { date: "2026-07-13", type: "buy", symbol: "ORCL", shares: 7.3335, price: 136.36 },
     { date: "2026-07-13", type: "buy", symbol: "IAU", shares: 13.3076, price: 75.15 },
-    { date: "2026-07-13", type: "buy", symbol: "ORCL", shares: 7.5219, price: 132.95 }
+    { date: "2026-07-13", type: "buy", symbol: "ORCL", shares: 7.5219, price: 132.95 },
+    { date: "2026-07-13", type: "buy", symbol: "ORCL", shares: 7.58, price: 131.92 },
+    { date: "2026-07-13", type: "buy", symbol: "GOOGL", shares: 2.8336, price: 352.9 },
+    { date: "2026-07-13", type: "buy", symbol: "NVDA", shares: 4.9066, price: 203.81 },
+    { date: "2026-07-13", type: "buy", symbol: "NVDA", shares: 4.9025, price: 203.98 }
 ];
