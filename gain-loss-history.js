@@ -3,11 +3,11 @@
 
 window.gainLossHistory = [
   {
-    "date": "2026-07-10",
-    "gainLoss": 191
+    "date": "2026-07-13",
+    "gainLoss": -94.96
   },
   {
-    "date": "2026-07-13",
-    "gainLoss": -25.37
+    "date": "2026-07-10",
+    "gainLoss": 191.0
   }
 ];
