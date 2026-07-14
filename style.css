@@ -337,3 +337,24 @@ tfoot tr:last-child td{
     white-space: normal !important;
     word-break: break-word;
 }
+
+
+/* V5.5.13 - Force 日期 column to minimum width */
+.comments-table{
+  table-layout:fixed !important;
+  width:100% !important;
+}
+.comments-table col.date-col{width:90px!important;}
+.comments-table th:first-child,
+.comments-table td:first-child{
+  width:90px !important;
+  max-width:90px !important;
+  min-width:90px !important;
+  white-space:nowrap !important;
+  overflow:hidden;
+  padding:4px 6px !important;
+}
+.comments-table th:last-child,
+.comments-table td:last-child{
+  width:auto !important;
+}
