@@ -300,3 +300,17 @@ tfoot tr:last-child td{
     font-style: italic;
     padding: 16px;
 }
+
+
+/* V5.5.8 - Shrink 评论日期 column to content */
+.comments-table{
+    table-layout:auto;
+}
+.comments-table th:first-child,
+.comments-table td:first-child{
+    width:1%;
+    white-space:nowrap;
+}
+.comment-text{
+    width:99%;
+}
