@@ -246,3 +246,33 @@ h1, h2,
     background: #e5e7eb;
     color: #111827;
 }
+
+
+/* V5.5.2 - Larger total gain/loss font */
+#totalGainLoss,
+.totalGainLoss,
+.total-gain-loss,
+.total-profit,
+tr.total-row td,
+tfoot tr:last-child td{
+    font-size:1.25em !important;
+    font-weight:700 !important;
+}
+
+
+/* V5.5.3 - Portfolio summary emphasis */
+.chart-summary .today-total-gain {
+    font-weight: 700;
+}
+
+.chart-summary .overall-total-gain {
+    font-size: 1.25em;
+    font-weight: 700;
+}
+
+
+/* V5.5.4 Match 今日总盈亏 font to 总盈亏 */
+.chart-summary .today-total-gain{
+    font-size:1.25em !important;
+    font-weight:700 !important;
+}

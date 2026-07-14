@@ -385,6 +385,7 @@ async function loadPortfolio() {
     let totalValue = 0;
     let totalCost = 0;
     let totalGain = 0;
+    let todayTotalGain = 0;
 
     const symbols = Object.keys(positions);
 
@@ -408,6 +409,7 @@ async function loadPortfolio() {
         totalValue += marketValue;
         totalCost += costBasis;
         totalGain += gainLoss;
+        todayTotalGain += stock.shares * quote.dailyChange;
 
         portfolioRows.push({
             symbol,
@@ -430,6 +432,12 @@ async function loadPortfolio() {
     const totalGainPercent =
         totalCost > 0 ? (totalGain / totalCost) * 100 : 0;
 
+    const previousClosePortfolioValue = totalValue - todayTotalGain;
+    const todayTotalGainPercent =
+        previousClosePortfolioValue > 0
+            ? (todayTotalGain / previousClosePortfolioValue) * 100
+            : 0;
+
     totalValueCell.textContent = formatMoney(totalValue);
     totalCostCell.textContent = formatMoney(totalCost);
 
@@ -441,12 +449,24 @@ async function loadPortfolio() {
     totalGainPercentCell.className = totalGain >= 0 ? "gain" : "loss";
 
     const overallClass = totalValue >= totalCost ? "gain" : "loss";
+    const todayClass =
+        todayTotalGain > 0
+            ? "gain"
+            : todayTotalGain < 0
+                ? "loss"
+                : "muted";
+
     chartSummary.innerHTML =
         "总投入：" +
         formatMoney(totalCost) +
         '　|　<span class="' + overallClass + '">当前市值：' +
         formatMoney(totalValue) +
-        '</span>　|　<span class="' + overallClass + '">总盈亏：' +
+        '</span>　|　<span class="today-total-gain ' + todayClass + '">今日总盈亏：' +
+        (todayTotalGain > 0 ? "+" : "") +
+        formatMoney(todayTotalGain) +
+        " (" +
+        formatPercent(todayTotalGainPercent) +
+        ')</span>　|　<span class="overall-total-gain ' + overallClass + '">总盈亏：' +
         (totalGain >= 0 ? "+" : "") +
         formatMoney(totalGain) +
         " (" +
