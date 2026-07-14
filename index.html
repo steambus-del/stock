@@ -83,17 +83,7 @@
   </section>
 </div>
 
-<h2>买卖记录</h2>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>日期</th><th>操作</th><th>股票代码</th><th>股数</th><th>交易价格</th><th>交易金额</th></tr></thead>
-      <tbody id="transactionBody"></tbody>
-    </table>
-  </div>
-  <div class="pager"><button id="txPrevButton">上一页</button><span id="txPageInfo">第 1 页</span><button id="txNextButton">下一页</button></div>
-
   <h2>评论</h2>
-  <div class="note">评论内容来自 <b>comments.js</b>，修改文件后重新上传到 GitHub 即可更新。</div>
   <div class="table-wrap">
     <table class="comments-table">
       <thead>
@@ -105,7 +95,15 @@
       <tbody id="commentsBody"></tbody>
     </table>
   </div>
-
+  
+<h2>买卖记录</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>日期</th><th>操作</th><th>股票代码</th><th>股数</th><th>交易价格</th><th>交易金额</th></tr></thead>
+      <tbody id="transactionBody"></tbody>
+    </table>
+  </div>
+  <div class="pager"><button id="txPrevButton">上一页</button><span id="txPageInfo">第 1 页</span><button id="txNextButton">下一页</button></div>
 
   <div id="historyDialog" class="history-dialog-overlay" hidden>
     <div class="history-dialog" role="dialog" aria-modal="true" aria-labelledby="historyDialogTitle">
