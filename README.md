@@ -1,4 +1,4 @@
-# 股票投资组合 V5.0 Fixed
+# stk V5.0 Fixed
 
 This version is rebuilt from the uploaded files so the HTML and JavaScript match.
 
