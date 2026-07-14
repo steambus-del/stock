@@ -27,6 +27,7 @@ const $ = id => document.getElementById(id);
 
 const portfolioBody = $("portfolioBody");
 const transactionBody = $("transactionBody");
+const commentsBody = $("commentsBody");
 const gainLossHistoryBody = $("gainLossHistoryBody");
 
 const totalValueCell = $("totalValueCell");
@@ -42,6 +43,16 @@ const ownershipPieCanvas = $("ownershipPieChart");
 const txPrevButton = $("txPrevButton");
 const txNextButton = $("txNextButton");
 const txPageInfo = $("txPageInfo");
+
+const portfolioComments = Array.isArray(window.portfolioComments)
+    ? window.portfolioComments
+        .map(record => ({
+            date: String(record.date || ""),
+            comment: String(record.comment || "").trim()
+        }))
+        .filter(record => record.date && record.comment)
+        .sort((a, b) => b.date.localeCompare(a.date))
+    : [];
 const historyPrevButton = $("historyPrevButton");
 const historyNextButton = $("historyNextButton");
 const historyPageInfo = $("historyPageInfo");
@@ -478,6 +489,7 @@ async function loadPortfolio() {
     drawOwnershipPieChart();
     drawGainLossHistory();
     drawTransactions();
+    drawComments();
 }
 
 function compareRows(a, b, key) {
@@ -744,6 +756,35 @@ function drawGainLossHistory() {
     if (historyNextButton) {
         historyNextButton.disabled = gainLossHistoryPage >= totalPages;
     }
+}
+
+
+function drawComments() {
+    if (!commentsBody) {
+        return;
+    }
+
+    commentsBody.innerHTML = "";
+
+    if (portfolioComments.length === 0) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td colspan="2" class="empty-comments">
+                暂无评论。请在 comments.js 中添加内容。
+            </td>
+        `;
+        commentsBody.appendChild(row);
+        return;
+    }
+
+    portfolioComments.forEach(record => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${record.date}</td>
+            <td class="comment-text">${record.comment}</td>
+        `;
+        commentsBody.appendChild(row);
+    });
 }
 
 function drawTransactions() {

@@ -276,3 +276,27 @@ tfoot tr:last-child td{
     font-size:1.25em !important;
     font-weight:700 !important;
 }
+
+
+.comments-table {
+    width: 100%;
+    max-width: 100%;
+}
+
+.comments-table th:first-child,
+.comments-table td:first-child {
+    width: 120px;
+}
+
+.comment-text {
+    text-align: left;
+    white-space: normal;
+    min-width: 360px;
+    line-height: 1.45;
+}
+
+.empty-comments {
+    color: #6b7280;
+    font-style: italic;
+    padding: 16px;
+}
