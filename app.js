@@ -1,14 +1,3 @@
-
-if(commentsPrevButton){
- commentsPrevButton.addEventListener("click",()=>{if(commentsPage>1){commentsPage--;drawComments();}});
-}
-if(commentsNextButton){
- commentsNextButton.addEventListener("click",()=>{
-  const tp=Math.max(1,Math.ceil(portfolioComments.length/COMMENTS_PER_PAGE));
-  if(commentsPage<tp){commentsPage++;drawComments();}
- });
-}
-
 const API_KEY = "d96p5f1r01qr77dldgf0d96p5f1r01qr77dldgfg";
 
 const transactions = Array.isArray(window.sharedTransactions)
@@ -39,6 +28,12 @@ const $ = id => document.getElementById(id);
 const portfolioBody = $("portfolioBody");
 const transactionBody = $("transactionBody");
 const commentsBody = $("commentsBody");
+
+let commentsPage = 1;
+const COMMENTS_PER_PAGE = 10;
+const commentsPrevButton = $("commentsPrevButton");
+const commentsNextButton = $("commentsNextButton");
+const commentsPageInfo = $("commentsPageInfo");
 const gainLossHistoryBody = $("gainLossHistoryBody");
 
 const totalValueCell = $("totalValueCell");
@@ -54,12 +49,6 @@ const ownershipPieCanvas = $("ownershipPieChart");
 const txPrevButton = $("txPrevButton");
 const txNextButton = $("txNextButton");
 const txPageInfo = $("txPageInfo");
-
-let commentsPage = 1;
-const COMMENTS_PER_PAGE = 10;
-const commentsPrevButton = $("commentsPrevButton");
-const commentsNextButton = $("commentsNextButton");
-const commentsPageInfo = $("commentsPageInfo");
 
 const portfolioComments = Array.isArray(window.portfolioComments)
     ? window.portfolioComments
@@ -155,11 +144,7 @@ document.querySelectorAll(".sort-header").forEach(button => {
 
         drawPortfolioTable();
     });
-    if(commentsPageInfo) commentsPageInfo.textContent=`第 ${commentsPage} 页 / 共 ${totalPages} 页`;
-    if(commentsPrevButton) commentsPrevButton.disabled=commentsPage<=1;
-    if(commentsNextButton) commentsNextButton.disabled=commentsPage>=totalPages;
-}
-);
+});
 
 if (chartSortSelect) {
     chartSortSelect.addEventListener("change", drawChartFromCurrentRows);
@@ -267,6 +252,30 @@ document.addEventListener("keydown", event => {
         closeHistoryDialog();
     }
 });
+
+
+if (commentsPrevButton) {
+    commentsPrevButton.addEventListener("click", () => {
+        if (commentsPage > 1) {
+            commentsPage--;
+            drawComments();
+        }
+    });
+}
+
+if (commentsNextButton) {
+    commentsNextButton.addEventListener("click", () => {
+        const totalPages = Math.max(
+            1,
+            Math.ceil(portfolioComments.length / COMMENTS_PER_PAGE)
+        );
+
+        if (commentsPage < totalPages) {
+            commentsPage++;
+            drawComments();
+        }
+    });
+}
 
 if (txPrevButton) {
     txPrevButton.addEventListener("click", () => {
@@ -787,7 +796,23 @@ function drawComments() {
 
     commentsBody.innerHTML = "";
 
-    if (portfolioComments.length === 0) {
+    const totalPages = Math.max(
+        1,
+        Math.ceil(portfolioComments.length / COMMENTS_PER_PAGE)
+    );
+
+    commentsPage = Math.min(
+        Math.max(commentsPage, 1),
+        totalPages
+    );
+
+    const startIndex = (commentsPage - 1) * COMMENTS_PER_PAGE;
+    const pageItems = portfolioComments.slice(
+        startIndex,
+        startIndex + COMMENTS_PER_PAGE
+    );
+
+    if (pageItems.length === 0) {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td colspan="2" class="empty-comments">
@@ -795,20 +820,29 @@ function drawComments() {
             </td>
         `;
         commentsBody.appendChild(row);
-        return;
+    } else {
+        pageItems.forEach(record => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${record.date}</td>
+                <td class="comment-text">${record.comment}</td>
+            `;
+            commentsBody.appendChild(row);
+        });
     }
 
-    const totalPages=Math.max(1,Math.ceil(portfolioComments.length/COMMENTS_PER_PAGE));
-commentsPage=Math.min(commentsPage,totalPages);
-const pageItems=portfolioComments.slice((commentsPage-1)*COMMENTS_PER_PAGE,commentsPage*COMMENTS_PER_PAGE);
-pageItems.forEach(record=>{
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${record.date}</td>
-            <td class="comment-text">${record.comment}</td>
-        `;
-        commentsBody.appendChild(row);
-    });
+    if (commentsPageInfo) {
+        commentsPageInfo.textContent =
+            `第 ${commentsPage} 页 / 共 ${totalPages} 页`;
+    }
+
+    if (commentsPrevButton) {
+        commentsPrevButton.disabled = commentsPage <= 1;
+    }
+
+    if (commentsNextButton) {
+        commentsNextButton.disabled = commentsPage >= totalPages;
+    }
 }
 
 function drawTransactions() {
