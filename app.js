@@ -1,14 +1,3 @@
-
-if(commentsPrevButton){
- commentsPrevButton.addEventListener("click",()=>{if(commentsPage>1){commentsPage--;drawComments();}});
-}
-if(commentsNextButton){
- commentsNextButton.addEventListener("click",()=>{
-  const tp=Math.max(1,Math.ceil(portfolioComments.length/COMMENTS_PER_PAGE));
-  if(commentsPage<tp){commentsPage++;drawComments();}
- });
-}
-
 const API_KEY = "d96p5f1r01qr77dldgf0d96p5f1r01qr77dldgfg";
 
 const transactions = Array.isArray(window.sharedTransactions)
@@ -54,12 +43,6 @@ const ownershipPieCanvas = $("ownershipPieChart");
 const txPrevButton = $("txPrevButton");
 const txNextButton = $("txNextButton");
 const txPageInfo = $("txPageInfo");
-
-let commentsPage = 1;
-const COMMENTS_PER_PAGE = 10;
-const commentsPrevButton = $("commentsPrevButton");
-const commentsNextButton = $("commentsNextButton");
-const commentsPageInfo = $("commentsPageInfo");
 
 const portfolioComments = Array.isArray(window.portfolioComments)
     ? window.portfolioComments
@@ -155,11 +138,7 @@ document.querySelectorAll(".sort-header").forEach(button => {
 
         drawPortfolioTable();
     });
-    if(commentsPageInfo) commentsPageInfo.textContent=`第 ${commentsPage} 页 / 共 ${totalPages} 页`;
-    if(commentsPrevButton) commentsPrevButton.disabled=commentsPage<=1;
-    if(commentsNextButton) commentsNextButton.disabled=commentsPage>=totalPages;
-}
-);
+});
 
 if (chartSortSelect) {
     chartSortSelect.addEventListener("change", drawChartFromCurrentRows);
@@ -798,10 +777,7 @@ function drawComments() {
         return;
     }
 
-    const totalPages=Math.max(1,Math.ceil(portfolioComments.length/COMMENTS_PER_PAGE));
-commentsPage=Math.min(commentsPage,totalPages);
-const pageItems=portfolioComments.slice((commentsPage-1)*COMMENTS_PER_PAGE,commentsPage*COMMENTS_PER_PAGE);
-pageItems.forEach(record=>{
+    portfolioComments.forEach(record => {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${record.date}</td>
