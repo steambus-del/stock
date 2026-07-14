@@ -358,3 +358,61 @@ tfoot tr:last-child td{
 .comments-table td:last-child{
   width:auto !important;
 }
+
+
+/* 股票投资组合 header with GIF fixed on the right */
+.portfolio-title-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 140px;
+    align-items: center;
+    width: 100%;
+    min-height: 64px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+.portfolio-title-spacer {
+    width: 140px;
+    height: 1px;
+}
+
+.portfolio-title {
+    margin: 0;
+    text-align: center;
+}
+
+.portfolio-title-gif-wrap {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 140px;
+}
+
+.portfolio-title-gif {
+    display: block;
+    width: auto;
+    height: 56px;
+    max-width: 140px;
+    object-fit: contain;
+}
+
+@media (max-width: 700px) {
+    .portfolio-title-row {
+        grid-template-columns: 80px 1fr 80px;
+        min-height: 52px;
+    }
+
+    .portfolio-title-spacer,
+    .portfolio-title-gif-wrap {
+        width: 80px;
+    }
+
+    .portfolio-title-gif {
+        height: 42px;
+        max-width: 80px;
+    }
+
+    .portfolio-title {
+        font-size: 1.6rem;
+    }
+}
