@@ -314,3 +314,32 @@ tfoot tr:last-child td{
 .comment-text{
     width:99%;
 }
+
+
+/* V5.5.10 - Compact 评论 date column */
+.comments-table {
+    width: 100% !important;
+    table-layout: auto !important;
+}
+
+.comments-table th:first-child,
+.comments-table td:first-child {
+    width: 1% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    white-space: nowrap !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+}
+
+.comments-table th:last-child,
+.comments-table td:last-child {
+    width: auto !important;
+}
+
+.comments-table .comment-text {
+    min-width: 0 !important;
+    width: auto !important;
+    white-space: normal !important;
+    word-break: break-word;
+}
