@@ -544,6 +544,19 @@ async function loadPortfolio() {
     totalGainPercentCell.textContent = formatPercent(totalGainPercent);
     totalGainPercentCell.className = totalGain >= 0 ? "gain" : "loss";
 
+    const realizedSales = calculateRealizedProfits();
+    const latestCumulativeRealized =
+        realizedSales.length > 0
+            ? realizedSales[realizedSales.length - 1].cumulativeGainLoss
+            : 0;
+
+    const realizedClass =
+        latestCumulativeRealized > 0
+            ? "gain"
+            : latestCumulativeRealized < 0
+                ? "loss"
+                : "muted";
+
     const overallClass = totalValue >= totalCost ? "gain" : "loss";
     const todayClass =
         todayTotalGain > 0
@@ -570,7 +583,10 @@ async function loadPortfolio() {
         formatMoney(totalGain) +
         " (" +
         formatPercent(totalGainPercent) +
-        ")</span>";
+        ')</span>　|　<span class="realized-total ' + realizedClass + '">累计已实现盈亏：' +
+        (latestCumulativeRealized > 0 ? "+" : "") +
+        formatMoney(latestCumulativeRealized) +
+        "</span>";
 
     drawPortfolioTable();
     drawChartFromCurrentRows();

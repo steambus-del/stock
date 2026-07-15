@@ -362,3 +362,7 @@ tfoot tr:last-child td{
 .profits-table{width:100%;max-width:100%}
 .profits-table th,.profits-table td{white-space:nowrap}
 .empty-profits{color:#6b7280;font-style:italic;padding:16px}
+
+.chart-summary .realized-total {
+    font-weight: 700;
+}
