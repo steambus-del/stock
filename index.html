@@ -9,17 +9,7 @@
 </head>
 <body>
 <div class="container">
-  <div class="portfolio-title-row">
-  <div class="portfolio-title-spacer" aria-hidden="true"></div>
-  <h1 class="portfolio-title">股票投资组合</h1>
-  <div class="portfolio-title-gif-wrap">
-    <img
-      src="./images/stock.gif"
-      class="portfolio-title-gif"
-      alt="股票市场动画"
-    >
-  </div>
-</div>
+  <h1>股票投资组合</h1>
   <div class="table-wrap">
     <table>
       <thead>
@@ -109,6 +99,18 @@
     <span id="commentsPageInfo">第 1 页</span>
     <button id="commentsNextButton">下一页</button>
   </div>
+
+
+<h2>利润</h2>
+<div class="table-wrap">
+  <table class="profits-table">
+    <thead><tr>
+      <th>卖出日期</th><th>股票代码</th><th>成本价</th><th>卖出价格</th>
+      <th>卖出股数</th><th>本次盈亏</th><th>累计已实现盈亏</th>
+    </tr></thead>
+    <tbody id="profitsBody"></tbody>
+  </table>
+</div>
 
 <h2>买卖记录</h2>
   <div class="table-wrap">

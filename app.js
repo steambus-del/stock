@@ -27,6 +27,7 @@ const $ = id => document.getElementById(id);
 
 const portfolioBody = $("portfolioBody");
 const transactionBody = $("transactionBody");
+const profitsBody = $("profitsBody");
 const commentsBody = $("commentsBody");
 
 let commentsPage = 1;
@@ -259,6 +260,7 @@ if (commentsPrevButton) {
         if (commentsPage > 1) {
             commentsPage--;
             drawComments();
+    drawRealizedProfits();
         }
     });
 }
@@ -871,6 +873,85 @@ function drawComments() {
     if (commentsNextButton) {
         commentsNextButton.disabled = commentsPage >= totalPages;
     }
+}
+
+
+function calculateRealizedProfits() {
+    const positions = {};
+    const sales = [];
+    let cumulativeGainLoss = 0;
+
+    transactions.forEach(tx => {
+        const symbol = tx.symbol;
+        positions[symbol] ??= { shares: 0, costBasis: 0 };
+        const position = positions[symbol];
+
+        if (tx.type === "buy") {
+            position.shares += tx.shares;
+            position.costBasis += tx.shares * tx.price;
+            return;
+        }
+
+        if (position.shares <= 0) return;
+
+        const sharesSold = Math.min(tx.shares, position.shares);
+        const averageCost = position.costBasis / position.shares;
+        const soldCostBasis = sharesSold * averageCost;
+        const realizedGainLoss = sharesSold * tx.price - soldCostBasis;
+
+        cumulativeGainLoss += realizedGainLoss;
+
+        sales.push({
+            averageCost,
+            date: tx.date,
+            symbol,
+            salePrice: tx.price,
+            sharesSold,
+            realizedGainLoss,
+            cumulativeGainLoss
+        });
+
+        position.shares -= sharesSold;
+        position.costBasis -= soldCostBasis;
+
+        if (position.shares < 0.000001) {
+            position.shares = 0;
+            position.costBasis = 0;
+        }
+    });
+
+    return sales;
+}
+
+function drawRealizedProfits() {
+    if (!profitsBody) return;
+    profitsBody.innerHTML = "";
+
+    const sales = calculateRealizedProfits();
+
+    if (!sales.length) {
+        const row = document.createElement("tr");
+        row.innerHTML = '<td colspan="6" class="empty-profits">暂无卖出记录，因此没有已实现盈亏。</td>';
+        profitsBody.appendChild(row);
+        return;
+    }
+
+    [...sales].reverse().forEach(sale => {
+        const saleClass = sale.realizedGainLoss > 0 ? "gain" : sale.realizedGainLoss < 0 ? "loss" : "";
+        const cumulativeClass = sale.cumulativeGainLoss > 0 ? "gain" : sale.cumulativeGainLoss < 0 ? "loss" : "";
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${sale.date}</td>
+            <td>${sale.symbol}</td>
+            <td>${formatMoney(sale.averageCost)}</td>
+            <td>${formatMoney(sale.salePrice)}</td>
+            <td>${formatNumber(sale.sharesSold)}</td>
+            <td class="${saleClass}">${sale.realizedGainLoss > 0 ? "+" : ""}${formatMoney(sale.realizedGainLoss)}</td>
+            <td class="${cumulativeClass}">${sale.cumulativeGainLoss > 0 ? "+" : ""}${formatMoney(sale.cumulativeGainLoss)}</td>
+        `;
+        profitsBody.appendChild(row);
+    });
 }
 
 function drawTransactions() {
