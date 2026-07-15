@@ -16,6 +16,7 @@ let portfolioRows = [];
 let portfolioChart = null;
 let ownershipPieChart = null;
 let transactionPage = 1;
+let profitsPage = 1;
 let gainLossHistoryPage = 1;
 
 let tableSortKey = "gainLoss";
@@ -28,6 +29,9 @@ const $ = id => document.getElementById(id);
 const portfolioBody = $("portfolioBody");
 const transactionBody = $("transactionBody");
 const profitsBody = $("profitsBody");
+const profitsPrevButton = $("profitsPrevButton");
+const profitsNextButton = $("profitsNextButton");
+const profitsPageInfo = $("profitsPageInfo");
 const commentsBody = $("commentsBody");
 
 let commentsPage = 1;
@@ -275,6 +279,30 @@ if (commentsNextButton) {
         if (commentsPage < totalPages) {
             commentsPage++;
             drawComments();
+        }
+    });
+}
+
+
+if (profitsPrevButton) {
+    profitsPrevButton.addEventListener("click", () => {
+        if (profitsPage > 1) {
+            profitsPage--;
+            drawRealizedProfits();
+        }
+    });
+}
+
+if (profitsNextButton) {
+    profitsNextButton.addEventListener("click", () => {
+        const totalPages = Math.max(
+            1,
+            Math.ceil(calculateRealizedProfits().length / PAGE_SIZE)
+        );
+
+        if (profitsPage < totalPages) {
+            profitsPage++;
+            drawRealizedProfits();
         }
     });
 }
@@ -927,31 +955,76 @@ function drawRealizedProfits() {
     if (!profitsBody) return;
     profitsBody.innerHTML = "";
 
-    const sales = calculateRealizedProfits();
+    const allSales = [...calculateRealizedProfits()].reverse();
+    const totalPages = Math.max(
+        1,
+        Math.ceil(allSales.length / PAGE_SIZE)
+    );
 
-    if (!sales.length) {
+    profitsPage = Math.min(
+        Math.max(profitsPage, 1),
+        totalPages
+    );
+
+    const startIndex = (profitsPage - 1) * PAGE_SIZE;
+    const pageSales = allSales.slice(
+        startIndex,
+        startIndex + PAGE_SIZE
+    );
+
+    if (!pageSales.length) {
         const row = document.createElement("tr");
-        row.innerHTML = '<td colspan="6" class="empty-profits">暂无卖出记录，因此没有已实现盈亏。</td>';
+        row.innerHTML =
+            '<td colspan="7" class="empty-profits">暂无卖出记录，因此没有已实现盈亏。</td>';
         profitsBody.appendChild(row);
-        return;
+    } else {
+        pageSales.forEach(sale => {
+            const saleClass =
+                sale.realizedGainLoss > 0
+                    ? "gain"
+                    : sale.realizedGainLoss < 0
+                        ? "loss"
+                        : "";
+
+            const cumulativeClass =
+                sale.cumulativeGainLoss > 0
+                    ? "gain"
+                    : sale.cumulativeGainLoss < 0
+                        ? "loss"
+                        : "";
+
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${sale.date}</td>
+                <td>${sale.symbol}</td>
+                <td>${formatMoney(sale.averageCost)}</td>
+                <td>${formatMoney(sale.salePrice)}</td>
+                <td>${formatNumber(sale.sharesSold)}</td>
+                <td class="${saleClass}">
+                    ${sale.realizedGainLoss > 0 ? "+" : ""}${formatMoney(sale.realizedGainLoss)}
+                </td>
+                <td class="${cumulativeClass}">
+                    ${sale.cumulativeGainLoss > 0 ? "+" : ""}${formatMoney(sale.cumulativeGainLoss)}
+                </td>
+            `;
+
+            profitsBody.appendChild(row);
+        });
     }
 
-    [...sales].reverse().forEach(sale => {
-        const saleClass = sale.realizedGainLoss > 0 ? "gain" : sale.realizedGainLoss < 0 ? "loss" : "";
-        const cumulativeClass = sale.cumulativeGainLoss > 0 ? "gain" : sale.cumulativeGainLoss < 0 ? "loss" : "";
+    if (profitsPageInfo) {
+        profitsPageInfo.textContent =
+            `第 ${profitsPage} 页 / 共 ${totalPages} 页`;
+    }
 
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${sale.date}</td>
-            <td>${sale.symbol}</td>
-            <td>${formatMoney(sale.averageCost)}</td>
-            <td>${formatMoney(sale.salePrice)}</td>
-            <td>${formatNumber(sale.sharesSold)}</td>
-            <td class="${saleClass}">${sale.realizedGainLoss > 0 ? "+" : ""}${formatMoney(sale.realizedGainLoss)}</td>
-            <td class="${cumulativeClass}">${sale.cumulativeGainLoss > 0 ? "+" : ""}${formatMoney(sale.cumulativeGainLoss)}</td>
-        `;
-        profitsBody.appendChild(row);
-    });
+    if (profitsPrevButton) {
+        profitsPrevButton.disabled = profitsPage <= 1;
+    }
+
+    if (profitsNextButton) {
+        profitsNextButton.disabled = profitsPage >= totalPages;
+    }
 }
 
 function drawTransactions() {
