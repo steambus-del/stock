@@ -45,7 +45,6 @@ const totalValueCell = $("totalValueCell");
 const totalCostCell = $("totalCostCell");
 const totalGainCell = $("totalGainCell");
 const totalGainPercentCell = $("totalGainPercentCell");
-const totalDailyStockGainCell = $("totalDailyStockGainCell");
 
 const chartSummary = $("chartSummary");
 const chartSortSelect = $("chartSortSelect");
@@ -457,7 +456,6 @@ async function loadPortfolio() {
     let totalValue = 0;
     let totalCost = 0;
     let totalGain = 0;
-    let totalDailyStockGain = 0;
 
     const symbols = Object.keys(positions);
 
@@ -477,15 +475,10 @@ async function loadPortfolio() {
         const averageCost = stock.shares > 0 ? costBasis / stock.shares : 0;
         const gainLoss = marketValue - costBasis;
         const gainPercent = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
-        const dailyStockGain =
-            stock.shares *
-            averageCost *
-            (quote.dailyChangePercent / 100);
 
         totalValue += marketValue;
         totalCost += costBasis;
         totalGain += gainLoss;
-        totalDailyStockGain += dailyStockGain;
 
         portfolioRows.push({
             symbol,
@@ -494,7 +487,6 @@ async function loadPortfolio() {
             currentPrice,
             dailyChange: quote.dailyChange,
             dailyChangePercent: quote.dailyChangePercent,
-            dailyStockGain,
             marketValue,
             costBasis,
             gainLoss,
@@ -551,12 +543,6 @@ async function loadPortfolio() {
 
     totalGainPercentCell.textContent = formatPercent(totalGainPercent);
     totalGainPercentCell.className = totalGain >= 0 ? "gain" : "loss";
-    if (totalDailyStockGainCell) {
-        totalDailyStockGainCell.textContent =
-            (totalDailyStockGain > 0 ? "+" : "") + formatMoney(totalDailyStockGain);
-        totalDailyStockGainCell.className =
-            totalDailyStockGain > 0 ? "gain" : totalDailyStockGain < 0 ? "loss" : "";
-    }
 
     const realizedSales = calculateRealizedProfits();
     const latestCumulativeRealized =
@@ -657,9 +643,6 @@ function drawPortfolioTable() {
             <td class="${dailyClass}">
                 ${stock.dailyChange > 0 ? "+" : ""}${formatMoney(stock.dailyChange)}
                 (${formatPercent(stock.dailyChangePercent)})
-            </td>
-            <td class="${stock.dailyStockGain > 0 ? "gain" : stock.dailyStockGain < 0 ? "loss" : ""}">
-                ${stock.dailyStockGain > 0 ? "+" : ""}${formatMoney(stock.dailyStockGain)}
             </td>
             <td>${formatMoney(stock.marketValue)}</td>
             <td>${formatMoney(stock.costBasis)}</td>
