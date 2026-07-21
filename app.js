@@ -629,7 +629,7 @@ async function loadPortfolio() {
               " (" +
               formatPercent(todayTotalGainPercent) +
               ")") +
-        '</span>　|　<span class="overall-total-gain ' + overallClass + '">总盈亏：' +
+        '</span>　|　<span class="overall-total-gain ' + overallClass + '">持仓总盈亏：' +
         (totalGain >= 0 ? "+" : "") +
         formatMoney(totalGain) +
         " (" +
