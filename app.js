@@ -3,24 +3,56 @@ const API_KEY = "d96p5f1r01qr77dldgf0d96p5f1r01qr77dldgfg";
 const transactions = Array.isArray(window.sharedTransactions)
     ? window.sharedTransactions
         .map((tx, originalIndex) => {
-            const rawType = String(tx.type || "").trim().toLowerCase();
-            const normalizedType =
-                rawType === "sell" ||
-                rawType === "卖出" ||
-                rawType === "sale"
-                    ? "sell"
-                    : "buy";
+            const rawType = String(
+                tx.type ??
+                tx.action ??
+                tx.operation ??
+                tx["操作"] ??
+                tx["类型"] ??
+                ""
+            ).trim().toLowerCase();
+
+            const normalizedType = [
+                "sell", "sale", "sold", "卖出", "出售"
+            ].includes(rawType)
+                ? "sell"
+                : "buy";
+
+            const rawShares =
+                tx.shares ??
+                tx.quantity ??
+                tx.qty ??
+                tx["股数"] ??
+                tx["卖出股数"] ??
+                tx["买入股数"] ??
+                0;
+
+            const rawPrice =
+                tx.price ??
+                tx.salePrice ??
+                tx.sellPrice ??
+                tx.buyPrice ??
+                tx["价格"] ??
+                tx["卖出价格"] ??
+                tx["买入价格"] ??
+                0;
 
             return {
-                date: String(tx.date || "").trim(),
+                date: String(tx.date ?? tx["日期"] ?? "").trim(),
                 type: normalizedType,
-                symbol: String(tx.symbol || "").trim().toUpperCase(),
-                shares: Number(tx.shares || 0),
-                price: Number(tx.price || 0),
+                symbol: String(
+                    tx.symbol ?? tx.ticker ?? tx["股票代码"] ?? ""
+                ).trim().toUpperCase(),
+                shares: Number(rawShares),
+                price: Number(rawPrice),
                 originalIndex
             };
         })
-        .filter(tx => tx.symbol && tx.shares > 0 && tx.price > 0)
+        .filter(tx =>
+            tx.symbol &&
+            Number.isFinite(tx.shares) && tx.shares > 0 &&
+            Number.isFinite(tx.price) && tx.price > 0
+        )
         .sort((a, b) => {
             const dateComparison = a.date.localeCompare(b.date);
             return dateComparison !== 0
@@ -29,6 +61,7 @@ const transactions = Array.isArray(window.sharedTransactions)
         })
         .map(({ originalIndex, ...tx }) => tx)
     : [];
+
 
 let portfolioRows = [];
 let portfolioChart = null;
@@ -1207,4 +1240,6 @@ function drawChart(labels, gains, gainPercents) {
     });
 }
 
+drawRealizedProfits();
+drawTransactions();
 loadPortfolio();
