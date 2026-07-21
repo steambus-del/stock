@@ -71,6 +71,6 @@ window.sharedTransactions = [
     { date: "2026-07-20", type: "buy", symbol: "DIS", shares: 20.7905, price: 96.2 },
     { date: "2026-07-21", type: "sell", symbol: "MU", shares: 33.1466, price: 929.29},
     { date: "2026-07-21", type: "buy", symbol: "GOOGL", shares: 5.7476, price: 347.97},
-    { date: "2026-07-21", type: "buy", symbol: "MU", shares: 10, price: 900},
-    { date: "2026-07-21", type: "sell", symbol: "MU", shares: 10, price: 837.5}
+    { date: "2026-07-21", type: "buy", symbol: "MU", shares: 10, price: 982.5},
+    { date: "2026-07-21", type: "sell", symbol: "MU", shares: 10, price: 920}
 ];
