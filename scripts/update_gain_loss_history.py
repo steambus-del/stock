@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-import re
+import subprocess
 import time
 import urllib.parse
 import urllib.request
@@ -17,20 +17,58 @@ API_KEY = os.environ.get("FINNHUB_API_KEY", "").strip()
 NEW_YORK = ZoneInfo("America/New_York")
 
 
-def read_javascript_array(path: Path, variable_name: str) -> list[dict]:
-    text = path.read_text(encoding="utf-8")
-    pattern = rf"window\.{re.escape(variable_name)}\s*=\s*(\[[\s\S]*?\])\s*;"
-    match = re.search(pattern, text)
+def read_javascript_variable(path: Path, variable_name: str) -> list[dict]:
+    """
+    Read a JavaScript variable by executing the file in Node.js.
 
-    if not match:
-        raise RuntimeError(f"Could not find window.{variable_name} in {path.name}")
+    This supports normal JavaScript object syntax such as:
+    - unquoted property names
+    - single-quoted strings
+    - trailing commas
+    - comments
 
-    array_text = re.sub(r"//.*", "", match.group(1))
-    return json.loads(array_text)
+    It avoids treating portfolio-data.js as strict JSON.
+    """
+    if not path.exists():
+        raise FileNotFoundError(f"Missing required file: {path}")
+
+    node_code = r"""
+const fs = require("fs");
+const vm = require("vm");
+
+const filePath = process.argv[1];
+const variableName = process.argv[2];
+
+const context = {
+  window: {},
+  console: console
+};
+
+vm.createContext(context);
+const source = fs.readFileSync(filePath, "utf8");
+vm.runInContext(source, context, { filename: filePath });
+
+const value = context.window[variableName];
+
+if (!Array.isArray(value)) {
+  throw new Error(`window.${variableName} was not found or is not an array`);
+}
+
+process.stdout.write(JSON.stringify(value));
+"""
+
+    completed = subprocess.run(
+        ["node", "-e", node_code, str(path), variable_name],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    return json.loads(completed.stdout)
 
 
 def parse_transactions(path: Path) -> list[dict]:
-    raw_transactions = read_javascript_array(path, "sharedTransactions")
+    raw_transactions = read_javascript_variable(path, "sharedTransactions")
     transactions: list[dict] = []
 
     for index, tx in enumerate(raw_transactions):
@@ -137,7 +175,7 @@ def get_quote(symbol: str) -> dict[str, float]:
 
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "portfolio-history-action/2.0"},
+        headers={"User-Agent": "portfolio-history-action/2.1"},
     )
 
     with urllib.request.urlopen(request, timeout=30) as response:
@@ -162,8 +200,9 @@ def parse_history(path: Path) -> list[dict]:
         return []
 
     try:
-        return read_javascript_array(path, "gainLossHistory")
-    except Exception:
+        return read_javascript_variable(path, "gainLossHistory")
+    except Exception as error:
+        print(f"Warning: could not read existing history: {error}")
         return []
 
 
@@ -189,7 +228,8 @@ def main() -> None:
             "Settings > Secrets and variables > Actions."
         )
 
-    positions = calculate_positions(parse_transactions(PORTFOLIO_FILE))
+    transactions = parse_transactions(PORTFOLIO_FILE)
+    positions = calculate_positions(transactions)
 
     if not positions:
         raise RuntimeError("No open positions were found.")
