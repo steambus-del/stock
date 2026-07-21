@@ -315,7 +315,6 @@ if (commentsPrevButton) {
         if (commentsPage > 1) {
             commentsPage--;
             drawComments();
-    drawRealizedProfits();
         }
     });
 }
@@ -507,6 +506,7 @@ async function loadPortfolio() {
     let totalValue = 0;
     let totalCost = 0;
     let totalGain = 0;
+    let todayTotalGain = 0;
 
     const symbols = Object.keys(positions);
 
@@ -527,9 +527,14 @@ async function loadPortfolio() {
         const gainLoss = marketValue - costBasis;
         const gainPercent = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
 
+        // Today's unrealized gain/loss for the remaining position only.
+        // This intentionally excludes realized gain/loss from shares sold today.
+        const stockTodayGain = stock.shares * quote.dailyChange;
+
         totalValue += marketValue;
         totalCost += costBasis;
         totalGain += gainLoss;
+        todayTotalGain += stockTodayGain;
 
         portfolioRows.push({
             symbol,
@@ -538,6 +543,7 @@ async function loadPortfolio() {
             currentPrice,
             dailyChange: quote.dailyChange,
             dailyChangePercent: quote.dailyChangePercent,
+            todayGain: stockTodayGain,
             marketValue,
             costBasis,
             gainLoss,
@@ -552,37 +558,11 @@ async function loadPortfolio() {
     const totalGainPercent =
         totalCost > 0 ? (totalGain / totalCost) * 100 : 0;
 
-    const todayDate = new Date();
-    const localToday = new Date(
-        todayDate.getTime() - todayDate.getTimezoneOffset() * 60000
-    ).toISOString().slice(0, 10);
-
-    // gainLossHistoryRecords is sorted newest first.
-    // Use the latest record strictly before today, so today's automatic
-    // history record is never subtracted from itself.
-    const previousBusinessDayRecord =
-        gainLossHistoryRecords.find(record => record.date < localToday) || null;
-
-    const previousBusinessDayGainLoss =
-        previousBusinessDayRecord
-            ? Number(previousBusinessDayRecord.gainLoss || 0)
-            : null;
-
-    const todayTotalGain =
-        previousBusinessDayGainLoss === null
-            ? 0
-            : totalGain - previousBusinessDayGainLoss;
-
-    // Previous portfolio value is approximated as cost basis plus the prior
-    // recorded total unrealized gain/loss.
-    const previousPortfolioValue =
-        previousBusinessDayGainLoss === null
-            ? 0
-            : totalCost + previousBusinessDayGainLoss;
-
+    // Today's unrealized percentage is measured against the current
+    // remaining cost basis. Realized gains/losses from today's sales are excluded.
     const todayTotalGainPercent =
-        previousPortfolioValue > 0
-            ? (todayTotalGain / previousPortfolioValue) * 100
+        totalCost > 0
+            ? (todayTotalGain / totalCost) * 100
             : 0;
 
     totalValueCell.textContent = formatMoney(totalValue);
@@ -622,13 +602,11 @@ async function loadPortfolio() {
         '　|　<span class="' + overallClass + '">当前市值：' +
         formatMoney(totalValue) +
         '</span>　|　<span class="today-total-gain ' + todayClass + '">今日总盈亏：' +
-        (previousBusinessDayGainLoss === null
-            ? "--"
-            : (todayTotalGain > 0 ? "+" : "") +
-              formatMoney(todayTotalGain) +
-              " (" +
-              formatPercent(todayTotalGainPercent) +
-              ")") +
+        (todayTotalGain > 0 ? "+" : "") +
+        formatMoney(todayTotalGain) +
+        " (" +
+        formatPercent(todayTotalGainPercent) +
+        ")" +
         '</span>　|　<span class="overall-total-gain ' + overallClass + '">持仓总盈亏：' +
         (totalGain >= 0 ? "+" : "") +
         formatMoney(totalGain) +
@@ -645,6 +623,7 @@ async function loadPortfolio() {
     drawGainLossHistory();
     drawTransactions();
     drawComments();
+    drawRealizedProfits();
 }
 
 function compareRows(a, b, key) {
@@ -1240,6 +1219,6 @@ function drawChart(labels, gains, gainPercents) {
     });
 }
 
+// Render profits immediately while live quotes load.
 drawRealizedProfits();
-drawTransactions();
 loadPortfolio();
