@@ -187,24 +187,6 @@ function saveLocalGainLossHistory() {
     }
 }
 
-function updateTodayHistoryDailyGain(todayTotalGain) {
-    const now = new Date();
-    const localToday = new Date(
-        now.getTime() - now.getTimezoneOffset() * 60000
-    ).toISOString().slice(0, 10);
-
-    const todayRecord = gainLossHistoryRecords.find(
-        record => record.date === localToday
-    );
-
-    if (!todayRecord) {
-        return;
-    }
-
-    todayRecord.dailyGainLoss = Number(todayTotalGain) || 0;
-    saveLocalGainLossHistory();
-}
-
 loadGainLossHistoryRecords();
 
 if (window.Chart && window.ChartDataLabels) {
@@ -648,8 +630,6 @@ async function loadPortfolio() {
         formatMoney(latestCumulativeRealized) +
         "</span>";
 
-    updateTodayHistoryDailyGain(todayTotalGain);
-
     drawPortfolioTable();
     drawChartFromCurrentRows();
     drawOwnershipPieChart();
@@ -862,6 +842,8 @@ function drawGainLossHistory() {
         gainLossHistoryBody.appendChild(row);
     } else {
         records.forEach((record, pageIndex) => {
+            // Recorded by the GitHub Action using the same formula as 今日总盈亏:
+            // sum of remaining shares × Finnhub daily per-share change.
             const dailyGainLoss =
                 Number.isFinite(Number(record.dailyGainLoss))
                     ? Number(record.dailyGainLoss)

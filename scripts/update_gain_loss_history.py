@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-"""Record one total unrealized gain/loss entry after market close."""
-
 from __future__ import annotations
 
 import json
@@ -20,122 +17,110 @@ API_KEY = os.environ.get("FINNHUB_API_KEY", "").strip()
 NEW_YORK = ZoneInfo("America/New_York")
 
 
-def parse_transactions(path: Path) -> list[dict]:
-    """Parse the simple object records used by portfolio-data.js."""
+def read_javascript_array(path: Path, variable_name: str) -> list[dict]:
     text = path.read_text(encoding="utf-8")
+    pattern = rf"window\.{re.escape(variable_name)}\s*=\s*(\[[\s\S]*?\])\s*;"
+    match = re.search(pattern, text)
 
-    match = re.search(
-        r"window\.sharedTransactions\s*=\s*\[(?P<body>[\s\S]*?)\]\s*;",
-        text,
-    )
     if not match:
-        raise RuntimeError(
-            "Could not find window.sharedTransactions in portfolio-data.js"
-        )
+        raise RuntimeError(f"Could not find window.{variable_name} in {path.name}")
 
+    array_text = re.sub(r"//.*", "", match.group(1))
+    return json.loads(array_text)
+
+
+def parse_transactions(path: Path) -> list[dict]:
+    raw_transactions = read_javascript_array(path, "sharedTransactions")
     transactions: list[dict] = []
 
-    for object_text in re.findall(r"\{([^{}]+)\}", match.group("body")):
-        def string_field(name: str, default: str = "") -> str:
-            field = re.search(
-                rf"{name}\s*:\s*['\"]([^'\"]*)['\"]",
-                object_text,
-            )
-            return field.group(1) if field else default
+    for index, tx in enumerate(raw_transactions):
+        raw_type = str(
+            tx.get("type")
+            or tx.get("action")
+            or tx.get("operation")
+            or tx.get("操作")
+            or tx.get("类型")
+            or ""
+        ).strip().lower()
 
-        def number_field(name: str) -> float:
-            field = re.search(
-                rf"{name}\s*:\s*(-?\d+(?:\.\d+)?)",
-                object_text,
-            )
-            return float(field.group(1)) if field else 0.0
-
-        record = {
-            "date": string_field("date"),
-            "type": string_field("type", "buy").lower(),
-            "symbol": string_field("symbol").upper(),
-            "shares": number_field("shares"),
-            "price": number_field("price"),
-        }
-
-        if record["symbol"] and record["shares"] > 0 and record["price"] > 0:
-            transactions.append(record)
-
-    if not transactions:
-        raise RuntimeError(
-            "No valid transactions could be parsed from portfolio-data.js"
+        transaction_type = (
+            "sell"
+            if raw_type in {"sell", "sale", "sold", "卖出", "出售"}
+            else "buy"
         )
 
+        symbol = str(
+            tx.get("symbol")
+            or tx.get("ticker")
+            or tx.get("股票代码")
+            or ""
+        ).strip().upper()
+
+        shares = float(
+            tx.get("shares")
+            or tx.get("quantity")
+            or tx.get("qty")
+            or tx.get("股数")
+            or tx.get("卖出股数")
+            or tx.get("买入股数")
+            or 0
+        )
+
+        price = float(
+            tx.get("price")
+            or tx.get("salePrice")
+            or tx.get("sellPrice")
+            or tx.get("buyPrice")
+            or tx.get("价格")
+            or tx.get("卖出价格")
+            or tx.get("买入价格")
+            or 0
+        )
+
+        date = str(tx.get("date") or tx.get("日期") or "").strip()
+
+        if symbol and shares > 0 and price > 0:
+            transactions.append(
+                {
+                    "date": date,
+                    "type": transaction_type,
+                    "symbol": symbol,
+                    "shares": shares,
+                    "price": price,
+                    "originalIndex": index,
+                }
+            )
+
+    transactions.sort(key=lambda tx: (tx["date"], tx["originalIndex"]))
     return transactions
-
-
-def parse_history(path: Path) -> list[dict]:
-    if not path.exists():
-        return []
-
-    text = path.read_text(encoding="utf-8")
-    match = re.search(
-        r"window\.gainLossHistory\s*=\s*\[(?P<body>[\s\S]*?)\]\s*;",
-        text,
-    )
-    if not match:
-        return []
-
-    records: list[dict] = []
-
-    for object_text in re.findall(r"\{([^{}]+)\}", match.group("body")):
-        date_match = re.search(
-            r"date\s*:\s*['\"]([^'\"]+)['\"]|"
-            r"\"date\"\s*:\s*\"([^\"]+)\"",
-            object_text,
-        )
-        gain_match = re.search(
-            r"gainLoss\s*:\s*(-?\d+(?:\.\d+)?)|"
-            r"\"gainLoss\"\s*:\s*(-?\d+(?:\.\d+)?)",
-            object_text,
-        )
-
-        if not date_match or not gain_match:
-            continue
-
-        date = next(value for value in date_match.groups() if value is not None)
-        gain = float(
-            next(value for value in gain_match.groups() if value is not None)
-        )
-        records.append({"date": date, "gainLoss": gain})
-
-    return records
 
 
 def calculate_positions(transactions: list[dict]) -> dict[str, dict[str, float]]:
     positions: dict[str, dict[str, float]] = {}
 
-    for transaction in transactions:
-        symbol = transaction["symbol"]
-        shares = float(transaction["shares"])
-        price = float(transaction["price"])
-        transaction_type = transaction["type"]
-
+    for tx in transactions:
         position = positions.setdefault(
-            symbol,
+            tx["symbol"],
             {"shares": 0.0, "cost": 0.0},
         )
 
-        if transaction_type == "sell":
-            if position["shares"] <= 0:
-                continue
+        if tx["type"] == "buy":
+            position["shares"] += tx["shares"]
+            position["cost"] += tx["shares"] * tx["price"]
+            continue
 
-            sold = min(shares, position["shares"])
-            average_cost = position["cost"] / position["shares"]
-            position["shares"] -= sold
-            position["cost"] -= sold * average_cost
+        if position["shares"] <= 0:
+            continue
 
-            if position["shares"] < 0.000001:
-                position["shares"] = 0.0
-                position["cost"] = 0.0
-        else:
-            position["shares"] += shares
-            position["cost"] += shares * price
+        shares_sold = min(tx["shares"], position["shares"])
+        average_cost = position["cost"] / position["shares"]
+
+        position["shares"] -= shares_sold
+        position["cost"] -= shares_sold * average_cost
+
+        if position["shares"] < 0.000001:
+            position["shares"] = 0.0
+            position["cost"] = 0.0
 
     return {
         symbol: position
@@ -144,7 +129,7 @@ def calculate_positions(transactions: list[dict]) -> dict[str, dict[str, float]]
     }
 
 
-def get_current_price(symbol: str) -> float:
+def get_quote(symbol: str) -> dict[str, float]:
     query = urllib.parse.urlencode(
         {"symbol": symbol, "token": API_KEY}
     )
@@ -152,28 +137,43 @@ def get_current_price(symbol: str) -> float:
 
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "portfolio-history-action/1.0"},
+        headers={"User-Agent": "portfolio-history-action/2.0"},
     )
 
     with urllib.request.urlopen(request, timeout=30) as response:
         payload = json.load(response)
 
-    price = float(payload.get("c") or 0)
+    current_price = float(payload.get("c") or 0)
+    daily_change = float(payload.get("d") or 0)
 
-    if price <= 0:
+    if current_price <= 0:
         raise RuntimeError(
             f"Finnhub returned no valid current price for {symbol}: {payload}"
         )
 
-    return price
+    return {
+        "currentPrice": current_price,
+        "dailyChange": daily_change,
+    }
+
+
+def parse_history(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
+
+    try:
+        return read_javascript_array(path, "gainLossHistory")
+    except Exception:
+        return []
 
 
 def write_history(records: list[dict]) -> None:
-    records.sort(key=lambda record: record["date"], reverse=True)
+    records.sort(key=lambda record: str(record["date"]), reverse=True)
 
     content = (
         "// Shared gain/loss history. Updated automatically by GitHub Actions.\n"
-        "// gainLoss is total unrealized portfolio gain/loss for the date.\n\n"
+        "// gainLoss: total unrealized portfolio gain/loss.\n"
+        "// dailyGainLoss: 今日总盈亏 = sum(remaining shares × daily price change).\n\n"
         "window.gainLossHistory = "
         + json.dumps(records, indent=2, ensure_ascii=False)
         + ";\n"
@@ -189,35 +189,45 @@ def main() -> None:
             "Settings > Secrets and variables > Actions."
         )
 
-    transactions = parse_transactions(PORTFOLIO_FILE)
-    positions = calculate_positions(transactions)
+    positions = calculate_positions(parse_transactions(PORTFOLIO_FILE))
 
     if not positions:
         raise RuntimeError("No open positions were found.")
 
     total_cost = sum(position["cost"] for position in positions.values())
     total_value = 0.0
+    daily_gain_loss = 0.0
 
     for index, symbol in enumerate(sorted(positions)):
-        price = get_current_price(symbol)
-        total_value += positions[symbol]["shares"] * price
-        print(f"{symbol}: {price}")
+        quote = get_quote(symbol)
+        shares = positions[symbol]["shares"]
+
+        total_value += shares * quote["currentPrice"]
+        daily_gain_loss += shares * quote["dailyChange"]
+
+        print(
+            f"{symbol}: current={quote['currentPrice']}, "
+            f"dailyChange={quote['dailyChange']}, shares={shares}"
+        )
 
         if index < len(positions) - 1:
             time.sleep(1.1)
 
     gain_loss = round(total_value - total_cost, 2)
+    daily_gain_loss = round(daily_gain_loss, 2)
     record_date = datetime.now(NEW_YORK).date().isoformat()
 
     history = [
         record
         for record in parse_history(HISTORY_FILE)
-        if record["date"] != record_date
+        if str(record.get("date", "")) != record_date
     ]
+
     history.append(
         {
             "date": record_date,
             "gainLoss": gain_loss,
+            "dailyGainLoss": daily_gain_loss,
         }
     )
 
@@ -230,6 +240,7 @@ def main() -> None:
                 "totalCost": round(total_cost, 2),
                 "totalValue": round(total_value, 2),
                 "gainLoss": gain_loss,
+                "dailyGainLoss": daily_gain_loss,
             },
             indent=2,
         )
