@@ -132,7 +132,10 @@ function loadGainLossHistoryRecords() {
         ? window.gainLossHistory
             .map(record => ({
                 date: String(record.date || ""),
-                gainLoss: Number(record.gainLoss || 0)
+                gainLoss: Number(record.gainLoss || 0),
+                dailyGainLoss: Number.isFinite(Number(record.dailyGainLoss))
+                    ? Number(record.dailyGainLoss)
+                    : null
             }))
             .filter(record => record.date)
         : [];
@@ -148,7 +151,10 @@ function loadGainLossHistoryRecords() {
             localRecords = saved
                 .map(record => ({
                     date: String(record.date || ""),
-                    gainLoss: Number(record.gainLoss || 0)
+                    gainLoss: Number(record.gainLoss || 0),
+                    dailyGainLoss: Number.isFinite(Number(record.dailyGainLoss))
+                        ? Number(record.dailyGainLoss)
+                        : null
                 }))
                 .filter(record => record.date);
         }
@@ -179,6 +185,24 @@ function saveLocalGainLossHistory() {
     } catch (error) {
         console.error("无法保存本地盈亏历史:", error);
     }
+}
+
+function updateTodayHistoryDailyGain(todayTotalGain) {
+    const now = new Date();
+    const localToday = new Date(
+        now.getTime() - now.getTimezoneOffset() * 60000
+    ).toISOString().slice(0, 10);
+
+    const todayRecord = gainLossHistoryRecords.find(
+        record => record.date === localToday
+    );
+
+    if (!todayRecord) {
+        return;
+    }
+
+    todayRecord.dailyGainLoss = Number(todayTotalGain) || 0;
+    saveLocalGainLossHistory();
 }
 
 loadGainLossHistoryRecords();
@@ -265,7 +289,14 @@ function saveHistoryEntry() {
         record => record.date === date
     );
 
-    const newRecord = { date, gainLoss };
+    const newRecord = {
+        date,
+        gainLoss,
+        dailyGainLoss:
+            existingIndex >= 0
+                ? gainLossHistoryRecords[existingIndex].dailyGainLoss ?? null
+                : null
+    };
 
     if (existingIndex >= 0) {
         gainLossHistoryRecords[existingIndex] = newRecord;
@@ -617,6 +648,8 @@ async function loadPortfolio() {
         formatMoney(latestCumulativeRealized) +
         "</span>";
 
+    updateTodayHistoryDailyGain(todayTotalGain);
+
     drawPortfolioTable();
     drawChartFromCurrentRows();
     drawOwnershipPieChart();
@@ -829,16 +862,10 @@ function drawGainLossHistory() {
         gainLossHistoryBody.appendChild(row);
     } else {
         records.forEach((record, pageIndex) => {
-            const globalIndex = startIndex + pageIndex;
-
-            // Records are sorted newest first.
-            // The next item in the array is the previous chronological day.
-            const previousRecord =
-                gainLossHistoryRecords[globalIndex + 1] || null;
-
-            const dailyGainLoss = previousRecord
-                ? record.gainLoss - previousRecord.gainLoss
-                : null;
+            const dailyGainLoss =
+                Number.isFinite(Number(record.dailyGainLoss))
+                    ? Number(record.dailyGainLoss)
+                    : null;
 
             const totalClass =
                 record.gainLoss > 0
