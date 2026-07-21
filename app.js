@@ -2,14 +2,32 @@ const API_KEY = "d96p5f1r01qr77dldgf0d96p5f1r01qr77dldgfg";
 
 const transactions = Array.isArray(window.sharedTransactions)
     ? window.sharedTransactions
-        .map(tx => ({
-            date: tx.date || "",
-            type: tx.type === "sell" ? "sell" : "buy",
-            symbol: String(tx.symbol || "").trim().toUpperCase(),
-            shares: Number(tx.shares || 0),
-            price: Number(tx.price || 0)
-        }))
+        .map((tx, originalIndex) => {
+            const rawType = String(tx.type || "").trim().toLowerCase();
+            const normalizedType =
+                rawType === "sell" ||
+                rawType === "卖出" ||
+                rawType === "sale"
+                    ? "sell"
+                    : "buy";
+
+            return {
+                date: String(tx.date || "").trim(),
+                type: normalizedType,
+                symbol: String(tx.symbol || "").trim().toUpperCase(),
+                shares: Number(tx.shares || 0),
+                price: Number(tx.price || 0),
+                originalIndex
+            };
+        })
         .filter(tx => tx.symbol && tx.shares > 0 && tx.price > 0)
+        .sort((a, b) => {
+            const dateComparison = a.date.localeCompare(b.date);
+            return dateComparison !== 0
+                ? dateComparison
+                : a.originalIndex - b.originalIndex;
+        })
+        .map(({ originalIndex, ...tx }) => tx)
     : [];
 
 let portfolioRows = [];
