@@ -1,8 +1,13 @@
 // Shared gain/loss history. Updated automatically by GitHub Actions.
 // gainLoss: total unrealized portfolio gain/loss.
-// dailyGainLoss: 今日总盈亏 = sum(remaining shares × daily price change).
+// dailyGainLoss: transaction-aware daily gain/loss.
 
 window.gainLossHistory = [
+  {
+    "date": "2026-07-23",
+    "gainLoss": -3772.19,
+    "dailyGainLoss": -2885.47
+  },
   {
     "date": "2026-07-22",
     "gainLoss": -511.16,
