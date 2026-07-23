@@ -475,6 +475,73 @@ function calculatePositions() {
     return positions;
 }
 
+
+function getNewYorkDateString() {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/New_York",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).formatToParts(new Date());
+
+    const values = Object.fromEntries(
+        parts.map(part => [part.type, part.value])
+    );
+
+    return `${values.year}-${values.month}-${values.day}`;
+}
+
+function calculateSharesBeforeDate(symbol, cutoffDate) {
+    let shares = 0;
+
+    transactions.forEach(tx => {
+        if (tx.symbol !== symbol || tx.date >= cutoffDate) {
+            return;
+        }
+
+        if (tx.type === "buy") {
+            shares += tx.shares;
+        } else {
+            shares -= Math.min(tx.shares, shares);
+        }
+    });
+
+    return Math.max(0, shares);
+}
+
+function calculateTransactionAwareTodayGain(
+    symbol,
+    currentPrice,
+    dailyChange,
+    endingShares,
+    today
+) {
+    const previousClose = currentPrice - dailyChange;
+    const beginningShares = calculateSharesBeforeDate(symbol, today);
+
+    let todayBuyCost = 0;
+    let todaySellProceeds = 0;
+
+    transactions.forEach(tx => {
+        if (tx.symbol !== symbol || tx.date !== today) {
+            return;
+        }
+
+        if (tx.type === "buy") {
+            todayBuyCost += tx.shares * tx.price;
+        } else {
+            todaySellProceeds += tx.shares * tx.price;
+        }
+    });
+
+    return (
+        endingShares * currentPrice +
+        todaySellProceeds -
+        todayBuyCost -
+        beginningShares * previousClose
+    );
+}
+
 async function getQuote(symbol) {
     try {
         const url =
@@ -515,13 +582,21 @@ async function loadPortfolio() {
     portfolioRows = [];
 
     const positions = calculatePositions();
+    const today = getNewYorkDateString();
 
     let totalValue = 0;
     let totalCost = 0;
     let totalGain = 0;
     let todayTotalGain = 0;
 
-    const symbols = Object.keys(positions);
+    // Include symbols that were completely sold today so their realized
+    // intraday result is still included in 今日总盈亏.
+    const symbols = [...new Set([
+        ...Object.keys(positions),
+        ...transactions
+            .filter(tx => tx.date === today)
+            .map(tx => tx.symbol)
+    ])];
 
     const quoteResults = await Promise.all(
         symbols.map(async symbol => ({
@@ -531,7 +606,10 @@ async function loadPortfolio() {
     );
 
     quoteResults.forEach(({ symbol, quote }) => {
-        const stock = positions[symbol];
+        const stock = positions[symbol] || {
+            shares: 0,
+            costBasis: 0
+        };
 
         const currentPrice = quote.currentPrice;
         const marketValue = stock.shares * currentPrice;
@@ -540,14 +618,24 @@ async function loadPortfolio() {
         const gainLoss = marketValue - costBasis;
         const gainPercent = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
 
-        // Today's unrealized gain/loss for the remaining position only.
-        // This intentionally excludes realized gain/loss from shares sold today.
-        const stockTodayGain = stock.shares * quote.dailyChange;
+        const stockTodayGain = calculateTransactionAwareTodayGain(
+            symbol,
+            currentPrice,
+            quote.dailyChange,
+            stock.shares,
+            today
+        );
+
+        todayTotalGain += stockTodayGain;
+
+        // Fully sold positions affect 今日总盈亏 but are not shown as holdings.
+        if (stock.shares <= 0) {
+            return;
+        }
 
         totalValue += marketValue;
         totalCost += costBasis;
         totalGain += gainLoss;
-        todayTotalGain += stockTodayGain;
 
         portfolioRows.push({
             symbol,
@@ -571,8 +659,6 @@ async function loadPortfolio() {
     const totalGainPercent =
         totalCost > 0 ? (totalGain / totalCost) * 100 : 0;
 
-    // Today's unrealized percentage is measured against the current
-    // remaining cost basis. Realized gains/losses from today's sales are excluded.
     const todayTotalGainPercent =
         totalCost > 0
             ? (todayTotalGain / totalCost) * 100
