@@ -121,7 +121,7 @@ window.sharedTransactions = [
     { date: "2026-07-28", type: "buy", symbol: "MU", shares: 12.1967, price: 819.89},
     { date: "2026-07-28", type: "buy", symbol: "MU", shares: 2.4503, price: 816.2},
     { date: "2026-07-28", type: "buy", symbol: "NVDA", shares: 40.6369, price: 196.86},
-    { date: "2026-07-29", type: "buy", symbol: "MU", shares: 12.7094, price: 786.82},
+    { date: "2026-07-29", type: "buy", symbol: "MU", shares: 12.7093, price: 786.82},
     { date: "2026-07-29", type: "buy", symbol: "NVDA", shares: 52.237, price: 191.43},
     { date: "2026-07-29", type: "buy", symbol: "MU", shares: 2.5694, price: 778.39},
     { date: "2026-07-29", type: "buy", symbol: "NVDA", shares: 10.4627, price: 191.16}
