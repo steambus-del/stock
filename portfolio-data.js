@@ -148,5 +148,6 @@ window.sharedTransactions = [
     { date: "2026-08-10", type: "buy", symbol: "GOOGL", shares: 56.4891, price: 354.05},
     { date: "2026-08-10", type: "buy", symbol: "AAPL", shares: 32.7064, price: 305.75},
     { date: "2026-08-10", type: "buy", symbol: "AAPL", shares: 32.7342, price: 305.49},
-    { date: "2026-08-11", type: "buy", symbol: "GOOGL", shares: 28.4062, price: 352.04}
+    { date: "2026-08-11", type: "buy", symbol: "GOOGL", shares: 28.4062, price: 352.04},
+    { date: "2026-08-11", type: "buy", symbol: "GOOGL", shares: 28.4559, price: 351.42}
 ];
