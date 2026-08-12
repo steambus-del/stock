@@ -10,12 +10,12 @@ window.gainLossHistory = [
   },
   {
     "date": "2026-08-11",
-    "gainLoss": 4435.06,
+    "gainLoss": -1871.53,
     "dailyGainLoss": -2327.63
   },
   {
     "date": "2026-08-10",
-    "gainLoss": 6762.69,
+    "gainLoss": 456.10,
     "dailyGainLoss": 456.1
   },
   {
