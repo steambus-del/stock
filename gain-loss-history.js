@@ -4,6 +4,11 @@
 
 window.gainLossHistory = [
   {
+    "date": "2026-08-20",
+    "gainLoss": 1.5,
+    "dailyGainLoss": 576.13
+  },
+  {
     "date": "2026-08-19",
     "gainLoss": 1.5,
     "dailyGainLoss": 663.69
