@@ -341,5 +341,6 @@ window.sharedTransactions = [
     { date: "2026-09-14", type: "buy", symbol: "AVGO", shares: 57.96, price: 345.07},
     { date: "2026-09-14", type: "buy", symbol: "AVGO", shares: 57.9836, price: 344.92},
     { date: "2026-09-14", type: "buy", symbol: "AVGO", shares: 58.0956, price: 344.26},
-    { date: "2026-09-14", type: "sell", symbol: "AVGO", shares: 376.3688, price: 347.33}
+    { date: "2026-09-14", type: "sell", symbol: "AVGO", shares: 376.3688, price: 347.33},
+    { date: "2026-09-15", type: "sell", symbol: "AVGO", shares: 174.2216, price: 344.39}
 ];
