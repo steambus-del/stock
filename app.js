@@ -543,11 +543,10 @@ function calculateTransactionAwareTodayGain(
     );
 }
 
+function formatFinnhubTimestamp(unixTimestamp) {
+    if (!Number.isFinite(unixTimestamp) || unixTimestamp <= 0) return null;
 
-function updateLastRefreshTime() {
-    if (!lastRefreshTime) return;
-
-    const formattedTime = new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("en-US", {
         timeZone: "America/Los_Angeles",
         year: "numeric",
         month: "2-digit",
@@ -557,9 +556,29 @@ function updateLastRefreshTime() {
         second: "2-digit",
         hour12: true,
         timeZoneName: "short"
-    }).format(new Date());
+    }).format(new Date(unixTimestamp * 1000));
+}
 
-    lastRefreshTime.textContent = "最后刷新时间：" + formattedTime;
+function updateFinnhubQuoteTime(quoteResults) {
+    if (!lastRefreshTime) return;
+
+    const timestamps = quoteResults
+        .map(result => Number(result.quote && result.quote.quoteTimestamp))
+        .filter(timestamp => Number.isFinite(timestamp) && timestamp > 0);
+
+    if (!timestamps.length) {
+        lastRefreshTime.textContent = "Finnhub 报价时间：API 未返回有效时间戳";
+        return;
+    }
+
+    const oldest = Math.min(...timestamps);
+    const newest = Math.max(...timestamps);
+    const oldestText = formatFinnhubTimestamp(oldest);
+    const newestText = formatFinnhubTimestamp(newest);
+
+    lastRefreshTime.textContent = oldest === newest
+        ? "Finnhub 报价时间：" + newestText
+        : "Finnhub 报价时间（各股票）：最新 " + newestText + "；最旧 " + oldestText;
 }
 
 async function getQuote(symbol) {
@@ -583,7 +602,9 @@ async function getQuote(symbol) {
             highPrice: Number(data.h) || 0,
             lowPrice: Number(data.l) || 0,
             dailyChange: Number(data.d) || 0,
-            dailyChangePercent: Number(data.dp) || 0
+            dailyChangePercent: Number(data.dp) || 0,
+            // Finnhub's `t` is the provider timestamp for this quote.
+            quoteTimestamp: Number(data.t) || null
         };
     } catch (error) {
         console.error("获取股票价格失败:", symbol, error);
@@ -593,7 +614,8 @@ async function getQuote(symbol) {
             highPrice: 0,
             lowPrice: 0,
             dailyChange: 0,
-            dailyChangePercent: 0
+            dailyChangePercent: 0,
+            quoteTimestamp: null
         };
     }
 }
@@ -743,9 +765,7 @@ async function loadPortfolio() {
     drawTransactions();
     drawComments();
     drawRealizedProfits();
-
-    // Record the time when this refresh cycle finishes rendering.
-    updateLastRefreshTime();
+    updateFinnhubQuoteTime(quoteResults);
 }
 
 function compareRows(a, b, key) {
