@@ -78,6 +78,7 @@ const PAGE_SIZE = 10;
 const $ = id => document.getElementById(id);
 
 const portfolioBody = $("portfolioBody");
+const lastRefreshTime = $("lastRefreshTime");
 const transactionBody = $("transactionBody");
 const profitsBody = $("profitsBody");
 const profitsPrevButton = $("profitsPrevButton");
@@ -542,6 +543,25 @@ function calculateTransactionAwareTodayGain(
     );
 }
 
+
+function updateLastRefreshTime() {
+    if (!lastRefreshTime) return;
+
+    const formattedTime = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Los_Angeles",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+        timeZoneName: "short"
+    }).format(new Date());
+
+    lastRefreshTime.textContent = "最后刷新时间：" + formattedTime;
+}
+
 async function getQuote(symbol) {
     try {
         const url =
@@ -723,6 +743,9 @@ async function loadPortfolio() {
     drawTransactions();
     drawComments();
     drawRealizedProfits();
+
+    // Record the time when this refresh cycle finishes rendering.
+    updateLastRefreshTime();
 }
 
 function compareRows(a, b, key) {
