@@ -1,4 +1,4 @@
-const API_KEY = "YOUR_FINNHUB_API_KEY";
+const API_KEY = "d96p5f1r01qr77dldgf0d96p5f1r01qr77dldgfg";
 
 function normalizeTransactionDate(value) {
     const date = String(value ?? "").trim();
