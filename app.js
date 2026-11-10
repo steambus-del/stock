@@ -1,4 +1,24 @@
-const API_KEY = "d96p5f1r01qr77dldgf0d96p5f1r01qr77dldgfg";
+const API_KEY = "YOUR_FINNHUB_API_KEY";
+
+function normalizeTransactionDate(value) {
+    const date = String(value ?? "").trim();
+
+    // Normalize YYYY-M-D and YYYY-MM-DD (also allowing / separators).
+    const isoMatch = date.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+    if (isoMatch) {
+        const [, year, month, day] = isoMatch;
+        return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+
+    // Normalize M/D/YYYY and MM/DD/YYYY.
+    const usMatch = date.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (usMatch) {
+        const [, month, day, year] = usMatch;
+        return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+
+    return date;
+}
 
 const transactions = Array.isArray(window.sharedTransactions)
     ? window.sharedTransactions
@@ -38,7 +58,7 @@ const transactions = Array.isArray(window.sharedTransactions)
                 0;
 
             return {
-                date: String(tx.date ?? tx["日期"] ?? "").trim(),
+                date: normalizeTransactionDate(tx.date ?? tx["日期"] ?? ""),
                 type: normalizedType,
                 symbol: String(
                     tx.symbol ?? tx.ticker ?? tx["股票代码"] ?? ""
@@ -475,8 +495,6 @@ function calculatePositions() {
 
     return positions;
 }
-
-
 function getNewYorkDateString() {
     const parts = new Intl.DateTimeFormat("en-CA", {
         timeZone: "America/New_York",
@@ -942,8 +960,6 @@ function drawOwnershipPieChart() {
         }
     });
 }
-
-
 function drawGainLossHistory() {
     if (!gainLossHistoryBody) return;
     gainLossHistoryBody.innerHTML = "";
