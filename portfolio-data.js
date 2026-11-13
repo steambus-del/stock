@@ -528,6 +528,20 @@ window.sharedTransactions = [
     { date: "2026-11-9", type: "buy", symbol: "NVDA", shares: 2126.8237, price: 178.2},
     { date: "2026-11-9", type: "sell", symbol: "NVDA", shares: 28.0071, price: 178.52},
     { date: "2026-11-10", type: "buy", symbol: "NVDA", shares: 33.7936, price: 171.63},
-    { date: "2026-11-13", type: "sell", symbol: "NVDA", shares: 2132.61, price: 166.43}
+    { date: "2026-11-13", type: "sell", symbol: "NVDA", shares: 2132.6102, price: 166.43},
+    { date: "2026-11-13", type: "buy", symbol: "META", shares: 126.256, price: 633.63},
+    { date: "2026-11-13", type: "buy", symbol: "XLC", shares: 367.1745, price: 108.94},
+    { date: "2026-11-13", type: "buy", symbol: "GOOGL", shares: 133.4602, price: 299.71},
+    { date: "2026-11-13", type: "buy", symbol: "XLC", shares: 92.0648, price: 108.62},
+    { date: "2026-11-13", type: "buy", symbol: "META", shares: 31.5279, price: 634.36},
+    { date: "2026-11-13", type: "buy", symbol: “GOOGL", shares: 67.078, price: 298.16},
+    { date: "2026-11-13", type: "buy", symbol: "META", shares: 31.718, price: 630.56},
+    { date: "2026-11-13", type: "buy", symbol: "GOOGL", shares: 33.7507, price: 296.29},
+    { date: "2026-11-13", type: "buy", symbol: "META", shares: 31.6809, price: 631.29},
+    { date: "2026-11-13", type: "buy", symbol: "META", shares: 31.8215, price: 628.5},
+    { date: "2026-11-13", type: "buy", symbol: "META", shares: 15.9399, price: 627.36},
+    { date: "2026-11-13", type: "buy", symbol: "GOOGL", shares: 67.7889, price: 295.03},
+    { date: "2026-11-13", type: "buy", symbol: "META", shares: 71.9144, price: 625.74}
+    
     
 ];
